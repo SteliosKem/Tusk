@@ -2,6 +2,7 @@
 #include <iostream>
 #include <string>
 #include "Lexer.h"
+#include "Parser.h"
 
 // This file is for testing in production. It will be stripped out when this project becomes a library.
 
@@ -15,8 +16,14 @@ int main()
         std::getline(std::cin, in);
         Lexer lexer(in);
         const std::vector<Token>& tokens = lexer.analyze();
+        std::cout << "TOKENS:\n";
         for (const Token& tok : tokens) {
             std::cout << (int)tok.type << '\n';
         }
+
+        Parser parser(tokens);
+        const std::shared_ptr<ASTNode>& ast = parser.parse();
+        std::cout << "NODES:\n";
+        std::cout << ast->to_string();
     }
 }
