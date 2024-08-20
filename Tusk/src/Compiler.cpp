@@ -27,6 +27,7 @@ namespace Tusk {
 
 	const Unit& Compiler::compile() {
 		expression(std::static_pointer_cast<Expression>(m_ast));
+		write((uint8_t)Instruction::RETURN);
 		return m_bytecode_out;
 	}
 
@@ -35,6 +36,8 @@ namespace Tusk {
 	}
 
 	void Compiler::binary_operation(const std::shared_ptr<BinaryOperation>& operation) {
+		expression(operation->left_expression);
+		expression(operation->right_expression);
 		switch (operation->operator_token.type)
 		{
 		case TokenType::PLUS:
@@ -52,7 +55,6 @@ namespace Tusk {
 		default:
 			break;
 		}
-		expression(operation->left_expression);
-		expression(operation->right_expression);
+		
 	}
 }

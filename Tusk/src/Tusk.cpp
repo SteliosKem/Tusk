@@ -4,6 +4,7 @@
 #include "Lexer.h"
 #include "Parser.h"
 #include "Compiler.h"
+#include "Emulator.h"
 
 // This file is for testing in production. It will be stripped out when this project becomes a library.
 
@@ -11,6 +12,7 @@ using namespace Tusk;
 
 int main()
 {
+    Emulator emulator{};
     std::string in;
     while (true) {
         std::cout << "> ";
@@ -29,6 +31,8 @@ int main()
 
         Compiler compiler(ast);
         const Unit& byte_code = compiler.compile();
-        std::cout << byte_code.disassemble();
+        std::cout << "BYTECODE:\n" << byte_code.disassemble();
+
+        emulator.run(&byte_code);
     }
 }

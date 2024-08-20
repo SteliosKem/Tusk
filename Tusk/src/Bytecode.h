@@ -10,7 +10,7 @@ namespace Tusk {
 		MULTIPLY,
 		DIVIDE,
 		RETURN,
-		VAL_INDEX
+		VAL_INDEX,
 	};
 
 	struct Unit {
@@ -21,6 +21,7 @@ namespace Tusk {
 		void write_byte(uint8_t byte) { m_bytecode.push_back(byte); }
 		uint8_t write_value(Value value) { m_values.push_back(value); return m_values.size() - 1; }
 		uint8_t operator[](uint8_t index) const { if(index < m_bytecode.size()) return m_bytecode[index]; }
+		const std::vector<Value>& get_values() const { return m_values; }
 		std::string disassemble() const;
 	private:
 		std::vector<uint8_t> m_bytecode;
