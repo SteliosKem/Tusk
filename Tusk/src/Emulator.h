@@ -29,6 +29,7 @@ namespace Tusk {
 		const Value& read_value();
 		void push_stack(const Value& val);
 		Value pop_stack();
+		Value& stack_top() { return m_stack[m_stack.size() - 1]; }
 
 		//
 		void binary_operation(TokenType operation);

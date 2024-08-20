@@ -11,6 +11,8 @@ namespace Tusk {
 		DIVIDE,
 		RETURN,
 		VAL_INDEX,
+		POP,
+		LOG,
 	};
 
 	struct Unit {

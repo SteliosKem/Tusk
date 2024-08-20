@@ -9,11 +9,11 @@ namespace Tusk {
 
 	class Compiler {
 	public:
-		Compiler(const std::shared_ptr<ASTNode>& tree) : m_ast{ tree } {}
+		Compiler(const std::shared_ptr<AST>& tree) : m_ast{ tree } {}
 
 		const Unit& compile();
 	private:
-		std::shared_ptr<ASTNode> m_ast;
+		std::shared_ptr<AST> m_ast;
 		Unit m_bytecode_out;
 
 		// UTILS
@@ -21,9 +21,14 @@ namespace Tusk {
 		void write(uint8_t byte_a, uint8_t byte_b);		// Writes two bytes to the bytecode
 		uint8_t add_constant(Value value);				// Adds a constant to the constant pool and returns its index
 
-		//
+		// Expressions
 		void expression(const std::shared_ptr<Expression>& expression);
 		void binary_operation(const std::shared_ptr<BinaryOperation>& operation);
 		void number(const std::shared_ptr<Number>& number);
+
+		// Statements
+		void statement(const std::shared_ptr<Statement>& statement);
+		void log_statement(const std::shared_ptr<LogStatement>& log_statement);
+		void expression_statement(const std::shared_ptr<ExpressionStatement>& expression_statement);
 	};
 }

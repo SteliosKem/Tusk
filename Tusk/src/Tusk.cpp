@@ -25,7 +25,7 @@ int main()
         }
 
         Parser parser(tokens);
-        const std::shared_ptr<ASTNode>& ast = parser.parse();
+        const std::shared_ptr<AST>& ast = parser.parse();
         std::cout << "NODES:\n";
         std::cout << ast->to_string() << '\n';
 

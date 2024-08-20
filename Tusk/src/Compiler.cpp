@@ -26,7 +26,9 @@ namespace Tusk {
 	}
 
 	const Unit& Compiler::compile() {
-		expression(std::static_pointer_cast<Expression>(m_ast));
+		for (std::shared_ptr<Statement> stmt : m_ast->statements) {
+			statement(stmt);
+		}
 		write((uint8_t)Instruction::RETURN);
 		return m_bytecode_out;
 	}
@@ -56,5 +58,24 @@ namespace Tusk {
 			break;
 		}
 		
+	}
+
+	void Compiler::statement(const std::shared_ptr<Statement>& statement) {
+		switch (statement->get_type()) {
+		case NodeType::LOG_STATEMENT:
+			log_statement(std::static_pointer_cast<LogStatement>(statement));
+			break;
+		case NodeType::EXPRESSION_STATEMENT:
+			expression_statement(std::static_pointer_cast<ExpressionStatement>(statement));
+			break;
+		}
+	}
+	void Compiler::log_statement(const std::shared_ptr<LogStatement>& log_statement) {
+		expression(log_statement->output);
+		write((uint8_t)Instruction::LOG, (uint8_t)Instruction::POP);
+	}
+	void Compiler::expression_statement(const std::shared_ptr<ExpressionStatement>& expression_statement) {
+		expression(expression_statement->expression);
+		write((uint8_t)Instruction::POP);
 	}
 }

@@ -11,11 +11,11 @@ namespace Tusk {
 		return (*m_bytes).get_values()[next_byte()];		// Get the constant index and pass it to the constant pool to return the value
 	}
 
-	void Emulator::push_stack(const Value& val) {
+	void Emulator::push_stack(const Value& val) {			// Push value to the stack
 		m_stack.push_back(val);
 	}
 
-	Value Emulator::pop_stack() {
+	Value Emulator::pop_stack() {							// Pop stack value and return it
 		Value to_ret = m_stack[m_stack.size() - 1];
 		m_stack.pop_back();
 		return to_ret;
@@ -69,9 +69,16 @@ namespace Tusk {
 				binary_operation(TokenType::SLASH);
 				break;
 			case Instruction::RETURN:
-				std::cout << pop_stack();
+				//std::cout << pop_stack();
 				return Result::OK;
+			case Instruction::LOG:
+				std::cout << stack_top();
+				break;
+			case Instruction::POP:
+				pop_stack();
+				break;
 			}
+
 		}
 	}
 }
