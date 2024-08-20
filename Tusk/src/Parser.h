@@ -1,12 +1,12 @@
 #pragma once
 #include <vector>
 #include "Token.h"
-
+#include "Value.h"
 #include <memory>
 
 
 namespace Tusk {
-	using Value = float;
+	
 
 	enum class NodeType {
 		// DEFAULTS
@@ -32,15 +32,15 @@ namespace Tusk {
 	};
 
 	struct BinaryOperation : public Expression {
-		std::shared_ptr<Expression> m_left_expression;
-		Token m_operator_token;
-		std::shared_ptr<Expression> m_right_expression;
+		std::shared_ptr<Expression> left_expression;
+		Token operator_token;
+		std::shared_ptr<Expression> right_expression;
 
 		BinaryOperation(std::shared_ptr<Expression> left, Token tok, std::shared_ptr<Expression> right)
-			: m_left_expression{left}, m_right_expression{right}, m_operator_token{tok} {}
+			: left_expression{left}, right_expression{right}, operator_token{tok} {}
 		NodeType get_type() const override { return NodeType::BINARY_OPERATION; }
 		std::string to_string() const override { 
-			return "(" + m_left_expression->to_string() + " " + std::to_string((int)m_operator_token.type) + " " + m_right_expression->to_string() + ")";
+			return "(" + left_expression->to_string() + " " + std::to_string((int)operator_token.type) + " " + right_expression->to_string() + ")";
 		}
 	};
 

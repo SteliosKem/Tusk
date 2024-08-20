@@ -3,6 +3,7 @@
 #include <string>
 #include "Lexer.h"
 #include "Parser.h"
+#include "Compiler.h"
 
 // This file is for testing in production. It will be stripped out when this project becomes a library.
 
@@ -24,6 +25,10 @@ int main()
         Parser parser(tokens);
         const std::shared_ptr<ASTNode>& ast = parser.parse();
         std::cout << "NODES:\n";
-        std::cout << ast->to_string();
+        std::cout << ast->to_string() << '\n';
+
+        Compiler compiler(ast);
+        const Unit& byte_code = compiler.compile();
+        std::cout << byte_code.disassemble();
     }
 }
