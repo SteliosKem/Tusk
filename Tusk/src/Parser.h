@@ -60,11 +60,16 @@ namespace Tusk {
 	};
 
 	struct Number : public Expression {
+		/*std::variant<int64_t, double> value;
+
+		Number(const std::variant<int64_t, double>& val) : value{val} {}
+		NodeType get_type() const override { return NodeType::NUMBER_VALUE; }
+		std::string to_string() const override { return std::to_string( std::holds_alternative<int64_t>(value) ? std::get<int64_t>(value) : std::get<double>(value)); }*/
 		Value value;
 
-		Number(Value val) : value{val} {}
+		Number(const Value& val) : value{val} {}
 		NodeType get_type() const override { return NodeType::NUMBER_VALUE; }
-		std::string to_string() const override { return std::to_string( value ); }
+		std::string to_string() const override { return std::to_string(value.is<int64_t>() ? value.get<int64_t>() : value.get<double>()); }
 	};
 
 	// STATEMENTS

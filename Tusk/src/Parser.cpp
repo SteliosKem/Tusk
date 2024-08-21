@@ -49,7 +49,11 @@ namespace Tusk {
 		std::shared_ptr<Expression> to_ret{ nullptr };
 		switch(current_token().type) {
 		case TokenType::INT:
-			to_ret = std::make_shared<Number>(stod(current_token().value));
+			to_ret = std::make_shared<Number>(Value{ (int64_t)stol(current_token().value) });
+			advance();
+			return to_ret;
+		case TokenType::FLOAT:
+			to_ret = std::make_shared<Number>(Value{ stod(current_token().value) });
 			advance();
 			return to_ret;
 		case TokenType::L_PAR:

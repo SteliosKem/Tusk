@@ -3,6 +3,10 @@
 #include <iostream>
 
 namespace Tusk {
+	inline bool is_num(const Value& val) {
+		return val.is<int64_t>() || val.is<double>();
+	}
+
 	inline uint8_t Emulator::next_byte() {
 		return (*m_bytes)[m_instruction_index++];			// Return byte at index and advance it
 	}
@@ -27,16 +31,20 @@ namespace Tusk {
 
 		switch (operation) {
 		case TokenType::PLUS:
-			push_stack(a + b);
+			push_stack((a.is<double>() ? a.get<double>() : a.get<int64_t>())
+				+ (b.is<double>() ? b.get<double>() : b.get<int64_t>()));
 			break;
 		case TokenType::MINUS:
-			push_stack(a - b);
+			push_stack((a.is<double>() ? a.get<double>() : a.get<int64_t>())
+				- (b.is<double>() ? b.get<double>() : b.get<int64_t>()));
 			break;
 		case TokenType::STAR:
-			push_stack(a * b);
+			push_stack((a.is<double>() ? a.get<double>() : a.get<int64_t>())
+				* (b.is<double>() ? b.get<double>() : b.get<int64_t>()));
 			break;
 		case TokenType::SLASH:
-			push_stack(a / b);
+			push_stack((a.is<double>() ? a.get<double>() : a.get<int64_t>())
+				/ (b.is<double>() ? b.get<double>() : b.get<int64_t>()));
 			break;
 		}
 	}
@@ -57,7 +65,10 @@ namespace Tusk {
 				m_stack.push_back(read_value());
 				break;
 			case Instruction::ADD:
-				binary_operation(TokenType::PLUS);
+				if (is_num(stack_top(1)) && is_num(stack_top()))
+					binary_operation(TokenType::PLUS);
+				else
+					m_error_handler.report_error("Operands must be numbers", {}, ErrorType::RUNTIME_ERROR);
 				break;
 			case Instruction::SUBTRACT:
 				binary_operation(TokenType::MINUS);
@@ -78,7 +89,8 @@ namespace Tusk {
 				pop_stack();
 				break;
 			case Instruction::NEGATE:
-				push_stack(-pop_stack());
+				Value val = pop_stack();
+				push_stack(- (val.is<int64_t>() ? val.get<int64_t>() : val.get<double>()));
 				break;
 			}
 

@@ -32,6 +32,7 @@ namespace Tusk {
 
 		// Add error to list
 		void report_error(const std::string& error_msg, const Position& position, ErrorType type);
+		void clear() { m_errors.clear(); }
 
 		bool has_errors() const { return !m_errors.empty(); }
 		const std::vector<Error>& get_errors() const { return m_errors; }

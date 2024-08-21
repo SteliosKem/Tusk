@@ -12,13 +12,14 @@ using namespace Tusk;
 
 int main()
 {
-    Emulator emulator{};
+    ErrorHandler handler;
+    Emulator emulator(handler);
+
     std::string in;
     while (true) {
         std::cout << "> ";
         std::getline(std::cin, in);
-        ErrorHandler handler;
-
+        
         Lexer lexer(in, handler);
         const std::vector<Token>& tokens = lexer.analyze();
         if(handler.has_errors())
@@ -48,5 +49,6 @@ int main()
                 emulator.run(&byte_code);
             }
         }
+        handler.clear();
     }
 }
