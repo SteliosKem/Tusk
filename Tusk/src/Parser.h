@@ -3,6 +3,7 @@
 #include "Token.h"
 #include "Value.h"
 #include <memory>
+#include <iostream>
 
 
 namespace Tusk {
@@ -110,13 +111,13 @@ namespace Tusk {
 		const std::shared_ptr<AST>& parse();
 	private:
 		const std::vector<Token> m_tokens;
-		int m_current_index{ -1 };
+		int m_current_index{ 0 };
 		
 
 		std::shared_ptr<AST> m_final_tree{ nullptr };
 
 		// UTIL
-		void advance() { m_current_index++; }
+		void advance() { if(m_current_index < m_tokens.size() - 1) m_current_index++; }
 		const Token& current_token() const { return m_tokens[m_current_index]; }
 		const Token& peek(uint32_t depth = 1) const { return m_tokens[m_current_index + depth]; }
 		void consume(TokenType type, const std::string& error);

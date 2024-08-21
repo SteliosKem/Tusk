@@ -50,7 +50,7 @@ namespace Tusk {
 	}
 
 	Result Emulator::run() {
-		Instruction instruction;
+ 		Instruction instruction;
 		while (true) {
 			switch (instruction = (Instruction)next_byte()) {
 			case Instruction::VAL_INDEX:

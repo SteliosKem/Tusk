@@ -3,7 +3,6 @@
 
 namespace Tusk {
 	const std::shared_ptr<AST>& Parser::parse() {
-		advance();
 		m_final_tree = std::make_shared<AST>();
 		while (current_token().type != TokenType::_EOF) {
 			m_final_tree->statements.push_back(statement());
@@ -13,12 +12,10 @@ namespace Tusk {
 	}
 
 	void Parser::consume(TokenType type, const std::string& error) {
-		if (peek().type != type)
+		if (current_token().type != type)
 			std::cout << error;
-		else {
+		else
 			advance();
-			advance();
-		}
 	}
 
 	std::shared_ptr<Expression> Parser::expression() {
@@ -48,11 +45,16 @@ namespace Tusk {
 	}
 
 	std::shared_ptr<Expression> Parser::factor() {
-		//std::shared_ptr<Expression> left{ factor() };
+		std::shared_ptr<Expression> to_ret{ nullptr };
 		switch(current_token().type) {
 		case TokenType::INT:
-			std::shared_ptr<Expression> to_ret = std::make_shared<Number>(stod(current_token().value));
+			to_ret = std::make_shared<Number>(stod(current_token().value));
 			advance();
+			return to_ret;
+		case TokenType::L_PAR:
+			advance();
+			to_ret = expression();
+			consume(TokenType::R_PAR, "Expected ')'");
 			return to_ret;
 		}
 		return nullptr;
@@ -68,7 +70,7 @@ namespace Tusk {
 		else
 			stmt = expression_statement();
 
-		//consume(TokenType::SEMICOLON, "Expected ';'");
+		consume(TokenType::SEMICOLON, "Expected ';'");
 		return stmt;
 	}
 
