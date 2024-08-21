@@ -57,6 +57,12 @@ namespace Tusk {
 			to_ret = expression();
 			consume(TokenType::R_PAR, "Expected ')'");
 			return to_ret;
+		case TokenType::MINUS: {
+			Token tok = current_token();
+			advance();
+			to_ret = std::make_shared<UnaryOperation>(tok, factor());
+			return to_ret;
+		}
 		default:
 			m_error_handler.report_error("Expected expression", {current_token().line}, ErrorType::COMPILE_ERROR);
 		}

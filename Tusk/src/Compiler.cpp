@@ -19,6 +19,9 @@ namespace Tusk {
 		case NodeType::BINARY_OPERATION:
 			binary_operation(std::static_pointer_cast<BinaryOperation>(expression));
 			break;
+		case NodeType::UNARY_OPERATION:
+			unary_operation(std::static_pointer_cast<UnaryOperation>(expression));
+			break;
 		case NodeType::NUMBER_VALUE:
 			number(std::static_pointer_cast<Number>(expression));
 			break;
@@ -58,6 +61,19 @@ namespace Tusk {
 			break;
 		}
 		
+	}
+
+	void Compiler::unary_operation(const std::shared_ptr<UnaryOperation>& operation) {
+		expression(operation->right_expression);
+		switch (operation->operator_token.type)
+		{
+		case TokenType::MINUS:
+			write((uint8_t)Instruction::NEGATE);
+			break;
+		default:
+			break;
+		}
+
 	}
 
 	void Compiler::statement(const std::shared_ptr<Statement>& statement) {

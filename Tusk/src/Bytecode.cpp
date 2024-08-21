@@ -31,6 +31,12 @@ namespace Tusk {
 			case Instruction::VAL_INDEX:
 				out += index_str(m_bytecode[++i]);
 				break;
+			case Instruction::POP:
+				out += instruction_str("POP");
+				break;
+			case Instruction::NEGATE:
+				out += instruction_str("NEGATE");
+				break;
 			default:
 				break;
 			}

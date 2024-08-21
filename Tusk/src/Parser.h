@@ -7,8 +7,6 @@
 #include "Error.h"
 
 namespace Tusk {
-	
-
 	enum class NodeType {
 		// DEFAULTS
 		NODE,
@@ -52,13 +50,13 @@ namespace Tusk {
 	};
 
 	struct UnaryOperation : public Expression {
-		Token m_operator_token;
-		std::shared_ptr<Expression> m_right_expression;
+		Token operator_token;
+		std::shared_ptr<Expression> right_expression;
 
 		UnaryOperation(Token tok, std::shared_ptr<Expression> right)
-			: m_right_expression{ right }, m_operator_token{ tok } {}
+			: right_expression{ right }, operator_token{ tok } {}
 		NodeType get_type() const override { return NodeType::UNARY_OPERATION; }
-		std::string to_string() const override { return "(" + std::to_string((int)m_operator_token.type) + " " + m_right_expression->to_string() + ")"; }
+		std::string to_string() const override { return "(" + std::to_string((int)operator_token.type) + " " + right_expression->to_string() + ")"; }
 	};
 
 	struct Number : public Expression {

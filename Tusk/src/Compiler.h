@@ -24,6 +24,7 @@ namespace Tusk {
 		// Expressions
 		void expression(const std::shared_ptr<Expression>& expression);
 		void binary_operation(const std::shared_ptr<BinaryOperation>& operation);
+		void unary_operation(const std::shared_ptr<UnaryOperation>& operation);
 		void number(const std::shared_ptr<Number>& number);
 
 		// Statements

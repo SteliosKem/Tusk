@@ -13,6 +13,7 @@ namespace Tusk {
 		VAL_INDEX,
 		POP,
 		LOG,
+		NEGATE,
 	};
 
 	struct Unit {

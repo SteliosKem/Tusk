@@ -77,6 +77,9 @@ namespace Tusk {
 			case Instruction::POP:
 				pop_stack();
 				break;
+			case Instruction::NEGATE:
+				push_stack(-pop_stack());
+				break;
 			}
 
 		}
