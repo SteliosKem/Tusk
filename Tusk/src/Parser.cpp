@@ -12,8 +12,9 @@ namespace Tusk {
 	}
 
 	void Parser::consume(TokenType type, const std::string& error) {
-		if (current_token().type != type)
-			std::cout << error;
+		if (current_token().type != type) {
+			m_error_handler.report_error(error, {current_token().line}, ErrorType::COMPILE_ERROR);
+		}
 		else
 			advance();
 	}
@@ -56,6 +57,8 @@ namespace Tusk {
 			to_ret = expression();
 			consume(TokenType::R_PAR, "Expected ')'");
 			return to_ret;
+		default:
+			m_error_handler.report_error("Expected expression", {current_token().line}, ErrorType::COMPILE_ERROR);
 		}
 		return nullptr;
 	}

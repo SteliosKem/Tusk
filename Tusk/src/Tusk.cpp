@@ -17,22 +17,36 @@ int main()
     while (true) {
         std::cout << "> ";
         std::getline(std::cin, in);
-        Lexer lexer(in);
+        ErrorHandler handler;
+
+        Lexer lexer(in, handler);
         const std::vector<Token>& tokens = lexer.analyze();
-        std::cout << "TOKENS:\n";
-        for (const Token& tok : tokens) {
-            std::cout << (int)tok.type << '\n';
+        if(handler.has_errors())
+            for (const Error& error : handler.get_errors()) {
+                std::cout << ErrorHandler::string_basic_with_type(error) << '\n';
+            }
+        else {
+            std::cout << "TOKENS:\n";
+            for (const Token& tok : tokens) {
+                std::cout << (int)tok.type << '\n';
+            }
+
+            Parser parser(tokens, handler);
+            const std::shared_ptr<AST>& ast = parser.parse();
+            if (handler.has_errors())
+                for (const Error& error : handler.get_errors()) {
+                    std::cout << ErrorHandler::string_basic_with_type(error) << '\n';
+                }
+            else {
+                std::cout << "NODES:\n";
+                std::cout << ast->to_string() << '\n';
+
+                Compiler compiler(ast);
+                const Unit& byte_code = compiler.compile();
+                std::cout << "BYTECODE:\n" << byte_code.disassemble();
+
+                emulator.run(&byte_code);
+            }
         }
-
-        Parser parser(tokens);
-        const std::shared_ptr<AST>& ast = parser.parse();
-        std::cout << "NODES:\n";
-        std::cout << ast->to_string() << '\n';
-
-        Compiler compiler(ast);
-        const Unit& byte_code = compiler.compile();
-        std::cout << "BYTECODE:\n" << byte_code.disassemble();
-
-        emulator.run(&byte_code);
     }
 }

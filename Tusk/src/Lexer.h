@@ -3,15 +3,15 @@
 #include <vector>
 #include <array>
 #include "token.h"
+#include "Error.h"
 
 namespace Tusk {
 	class Lexer {
 	public:
-		Lexer(const std::string& _source) : m_source(_source) {}
-		Lexer() { m_source = ""; }
+		Lexer(const std::string& source, ErrorHandler& handler) : m_source(source), m_error_handler{ handler } {}
+		//Lexer() { m_source = ""; }
 
 		const std::vector<Token>& analyze();					// Lexes the source code and returns vector of tokens
-		bool had_error() const;									// If an error is produced from the lexer it is reported here
 
 		std::array<std::string, 12> keywords{ "return", "let", "fn", "log", "if", "else", "while", "do", "for", "break", "continue" };
 		//std::array<std::string, 15> types{ "isize", "fsize", "i8", "i16", "i32", "i64", "f32", "f64", "u8", "usize", "u16", "u32", "u64", "string", "void" };
@@ -36,7 +36,7 @@ namespace Tusk {
 
 		std::string m_source{};									// The source code to lex
 
-		bool m_had_error{ false };
+		ErrorHandler& m_error_handler;
 
 		std::vector<Token> m_out;
 	};

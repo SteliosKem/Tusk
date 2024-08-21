@@ -4,7 +4,7 @@
 #include "Value.h"
 #include <memory>
 #include <iostream>
-
+#include "Error.h"
 
 namespace Tusk {
 	
@@ -106,13 +106,13 @@ namespace Tusk {
 
 	class Parser {
 	public:
-		Parser(const std::vector<Token>& tokens) : m_tokens{ tokens } {}
+		Parser(const std::vector<Token>& tokens, ErrorHandler& handler) : m_tokens{ tokens }, m_error_handler{ handler } {}
 
 		const std::shared_ptr<AST>& parse();
 	private:
 		const std::vector<Token> m_tokens;
 		int m_current_index{ 0 };
-		
+		ErrorHandler& m_error_handler;
 
 		std::shared_ptr<AST> m_final_tree{ nullptr };
 

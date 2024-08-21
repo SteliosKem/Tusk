@@ -2,6 +2,7 @@
 #include "lexer.h"
 #include <string>
 #include <iostream>
+#include <format>
 
 namespace Tusk {
     Token Lexer::lex() {
@@ -83,7 +84,7 @@ namespace Tusk {
         case '\0':
             return Token{ TokenType::_EOF, "", m_line, m_index, m_index };
         }
-        //m_error_handler->report_error(std::string("Unexpected character '") + m_current_char + std::string("'"), Token{ TokenType::ERROR, "", m_line, old_index, m_index });
+        m_error_handler.report_error(std::format("Unexpected character '{0}'", m_current_char), { m_line, old_index, m_index }, ErrorType::SYNTAX_ERROR);
         return Token{ TokenType::ERROR, "", m_line, old_index, m_index };
 
     }
@@ -108,7 +109,7 @@ namespace Tusk {
         }
 
         if (m_current_char == '\0') {                                        // If the lexer reaches the end without closing the string return an error
-            //error_handler->report_error("Unterminated string", Token{ TokenType::ERROR, "", m_line, old_index, m_index});
+            m_error_handler.report_error("Unterminated String", {m_line, old_index, m_index}, ErrorType::SYNTAX_ERROR);
             return Token{ TokenType::ERROR, "", m_line, old_index, m_index };
         }
         return Token{ TokenType::STR, string, m_line, old_index, m_index };
@@ -144,7 +145,7 @@ namespace Tusk {
         back();
 
         if (has_error) {                                                                        // Error double dot
-            //error_handler->report_error("Unexpected '.'", Token{TokenType::ERROR, "", m_line, dot_index, dot_index));
+            m_error_handler.report_error("Unexpected '.'", { m_line, dot_index, dot_index }, ErrorType::SYNTAX_ERROR);
             return Token{ TokenType::ERROR, "", m_line, dot_index, dot_index };
         }
         if (is_float)
