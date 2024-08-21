@@ -17,6 +17,7 @@ namespace Tusk {
 		NUMBER_VALUE,
 		BINARY_OPERATION,
 		UNARY_OPERATION,
+		BOOL_VALUE,
 
 		//STATEMENTS
 		LOG_STATEMENT,
@@ -70,6 +71,14 @@ namespace Tusk {
 		Number(const Value& val) : value{val} {}
 		NodeType get_type() const override { return NodeType::NUMBER_VALUE; }
 		std::string to_string() const override { return std::to_string(value.is<int64_t>() ? value.get<int64_t>() : value.get<double>()); }
+	};
+
+	struct BoolValue : public Expression {
+		bool value;
+
+		BoolValue(bool val) : value{ val } {}
+		NodeType get_type() const override { return NodeType::BOOL_VALUE; }
+		std::string to_string() const override { return value ? "true" : "false"; }
 	};
 
 	// STATEMENTS

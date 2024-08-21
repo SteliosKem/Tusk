@@ -13,7 +13,7 @@ namespace Tusk {
 
 		const std::vector<Token>& analyze();					// Lexes the source code and returns vector of tokens
 
-		std::array<std::string, 12> keywords{ "return", "let", "fn", "log", "if", "else", "while", "do", "for", "break", "continue" };
+		std::array<std::string, 13> keywords{ "return", "let", "fn", "log", "if", "else", "while", "do", "for", "break", "continue"};
 		//std::array<std::string, 15> types{ "isize", "fsize", "i8", "i16", "i32", "i64", "f32", "f64", "u8", "usize", "u16", "u32", "u64", "string", "void" };
 	private:
 		static bool is_digit(char character);					// Check if a character is a digit

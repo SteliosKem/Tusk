@@ -41,7 +41,7 @@ namespace Tusk {
 			else if (value.is<double>())
 				os << value.get<double>();
 			else if (value.is<bool>())
-				os << value.get<bool>();
+				os << (value.get<bool>() ? "true" : "false");
 			return os;
 		}
 	private:

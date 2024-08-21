@@ -25,6 +25,9 @@ namespace Tusk {
 		case NodeType::NUMBER_VALUE:
 			number(std::static_pointer_cast<Number>(expression));
 			break;
+		case NodeType::BOOL_VALUE:
+			boolean(std::static_pointer_cast<BoolValue>(expression));
+			break;
 		}
 	}
 
@@ -38,6 +41,10 @@ namespace Tusk {
 
 	void Compiler::number(const std::shared_ptr<Number>& number) {
 		write((uint8_t)Instruction::VAL_INDEX, add_constant(number->value));
+	}
+
+	void Compiler::boolean(const std::shared_ptr<BoolValue>& boolean) {
+		write((uint8_t)Instruction::VAL_INDEX, add_constant(boolean->value));
 	}
 
 	void Compiler::binary_operation(const std::shared_ptr<BinaryOperation>& operation) {

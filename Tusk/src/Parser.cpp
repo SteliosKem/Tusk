@@ -67,6 +67,12 @@ namespace Tusk {
 			to_ret = std::make_shared<UnaryOperation>(tok, factor());
 			return to_ret;
 		}
+		case TokenType::TRUE:
+			advance();
+			return std::make_shared<BoolValue>(true);
+		case TokenType::FALSE:
+			advance();
+			return std::make_shared<BoolValue>(false);
 		default:
 			m_error_handler.report_error("Expected expression", {current_token().line}, ErrorType::COMPILE_ERROR);
 		}

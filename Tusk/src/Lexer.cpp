@@ -171,6 +171,10 @@ namespace Tusk {
             return Token{ TokenType::AND, string, m_line, old_index, m_index };
         else if (string == "or")
             return Token{ TokenType::OR, string, m_line, old_index, m_index };
+        else if (string == "true")
+            return Token{ TokenType::TRUE, string, m_line, old_index, m_index };
+        else if (string == "false")
+            return Token{ TokenType::FALSE, string, m_line, old_index, m_index };
         return Token{ TokenType::ID, string, m_line, old_index, m_index };
     }
 

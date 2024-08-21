@@ -46,7 +46,10 @@ int main()
                 const Unit& byte_code = compiler.compile();
                 std::cout << "BYTECODE:\n" << byte_code.disassemble();
 
-                emulator.run(&byte_code);
+                if(emulator.run(&byte_code) != Result::OK)
+                    for (const Error& error : handler.get_errors()) {
+                        std::cout << ErrorHandler::string_basic_with_type(error) << '\n';
+                    }
             }
         }
         handler.clear();

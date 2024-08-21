@@ -26,6 +26,7 @@ namespace Tusk {
 		void binary_operation(const std::shared_ptr<BinaryOperation>& operation);
 		void unary_operation(const std::shared_ptr<UnaryOperation>& operation);
 		void number(const std::shared_ptr<Number>& number);
+		void boolean(const std::shared_ptr<BoolValue>& boolean);
 
 		// Statements
 		void statement(const std::shared_ptr<Statement>& statement);

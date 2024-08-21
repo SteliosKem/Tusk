@@ -67,8 +67,10 @@ namespace Tusk {
 			case Instruction::ADD:
 				if (is_num(stack_top(1)) && is_num(stack_top()))
 					binary_operation(TokenType::PLUS);
-				else
+				else {
 					m_error_handler.report_error("Operands must be numbers", {}, ErrorType::RUNTIME_ERROR);
+					return Result::RUNTIME_ERROR;
+				}
 				break;
 			case Instruction::SUBTRACT:
 				binary_operation(TokenType::MINUS);
@@ -90,7 +92,12 @@ namespace Tusk {
 				break;
 			case Instruction::NEGATE:
 				Value val = pop_stack();
-				push_stack(- (val.is<int64_t>() ? val.get<int64_t>() : val.get<double>()));
+				if (val.is<int64_t>() || val.is<double>())
+					push_stack(-(val.is<int64_t>() ? val.get<int64_t>() : val.get<double>()));
+				else {
+					m_error_handler.report_error("Operand must be number", {}, ErrorType::RUNTIME_ERROR);
+					return Result::RUNTIME_ERROR;
+				}
 				break;
 			}
 
