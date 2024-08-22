@@ -34,6 +34,7 @@ namespace Tusk {
 		Value(double real) : m_value{ real } {}
 		Value(bool boolean) : m_value{ boolean } {}
 		Value(const std::shared_ptr<ValueObject>& object) : m_value{ object } {}
+		Value(const std::string& str) : m_value{ std::make_shared<String>(str) } {}
 		Value() = default;
 
 		template<typename T>
@@ -79,7 +80,7 @@ namespace Tusk {
 			else if (value.is<std::shared_ptr<ValueObject>>()) {
 				switch (value.get_object_type()) {
 				case ObjectType::STRING:
-					os << value.get_object<String>()->string;
+					os << '"' << value.get_object<String>()->string << '"';
 					break;
 				case ObjectType::VOID:
 					os << "void";

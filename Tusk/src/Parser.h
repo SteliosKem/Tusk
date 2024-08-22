@@ -20,6 +20,7 @@ namespace Tusk {
 		BOOL_VALUE,
 		NAME,
 		VOID,
+		STRING,
 
 		//STATEMENTS
 		LOG_STATEMENT,
@@ -83,6 +84,14 @@ namespace Tusk {
 		BoolValue(bool val) : value{ val } {}
 		NodeType get_type() const override { return NodeType::BOOL_VALUE; }
 		std::string to_string() const override { return value ? "true" : "false"; }
+	};
+
+	struct StringLiteral : public Expression {
+		std::string value;
+
+		StringLiteral(const std::string& val) : value{ val } {}
+		NodeType get_type() const override { return NodeType::STRING; }
+		std::string to_string() const override { return '"' + value + '"'; }
 	};
 
 	struct Name : public Expression {

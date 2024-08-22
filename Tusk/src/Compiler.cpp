@@ -34,6 +34,9 @@ namespace Tusk {
 		case NodeType::VOID:
 			write((uint8_t)Instruction::VOID);
 			break;
+		case NodeType::STRING:
+			write((uint8_t)Instruction::VAL_INDEX, add_constant(std::static_pointer_cast<StringLiteral>(expression)->value));
+			break;
 		}
 	}
 

@@ -142,6 +142,11 @@ namespace Tusk {
 			advance();
 			return to_ret;
 		}
+		case TokenType::STR: {
+			to_ret = std::make_shared<StringLiteral>(current_token().value);
+			advance();
+			return to_ret;
+		}
 		default:
 			m_error_handler.report_error("Expected expression", {current_token().line}, ErrorType::COMPILE_ERROR);
 		}
