@@ -27,10 +27,12 @@ namespace Tusk {
 		void unary_operation(const std::shared_ptr<UnaryOperation>& operation);
 		void number(const std::shared_ptr<Number>& number);
 		void boolean(const std::shared_ptr<BoolValue>& boolean);
+		void name(const std::shared_ptr<Name>& name);
 
 		// Statements
 		void statement(const std::shared_ptr<Statement>& statement);
 		void log_statement(const std::shared_ptr<LogStatement>& log_statement);
 		void expression_statement(const std::shared_ptr<ExpressionStatement>& expression_statement);
+		void variable_declaration(const std::shared_ptr<VariableDeclaration>& variable_decl);
 	};
 }

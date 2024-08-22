@@ -175,6 +175,8 @@ namespace Tusk {
             return Token{ TokenType::TRUE, string, m_line, old_index, m_index };
         else if (string == "false")
             return Token{ TokenType::FALSE, string, m_line, old_index, m_index };
+        else if (string == "void")
+            return Token{ TokenType::VOID, string, m_line, old_index, m_index };
         return Token{ TokenType::ID, string, m_line, old_index, m_index };
     }
 

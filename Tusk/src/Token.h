@@ -12,7 +12,7 @@ enum class TokenType {
 	R_SHIFT, L_SHIFT, ARROW, PERCENT_EQUAL,
 
 	ID, STR, TRUE, FALSE, KEYWORD, TYPE,							// TYPE TOKENS
-	INT, FLOAT,
+	INT, FLOAT, VOID,
 
 	ERROR, _EOF														// SPECIAL TOKENS
 };

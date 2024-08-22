@@ -25,7 +25,11 @@ namespace Tusk {
 		return to_ret;
 	}
 
-	void Emulator::binary_operation(TokenType operation) {
+	Result Emulator::binary_operation(TokenType operation) {
+		if (!is_num(stack_top(1)) || !is_num(stack_top())) {
+			m_error_handler.report_error("Operands must be numbers", {}, ErrorType::RUNTIME_ERROR);
+			return Result::RUNTIME_ERROR;
+		}
 		Value b = pop_stack();
 		Value a = pop_stack();
 
@@ -46,7 +50,38 @@ namespace Tusk {
 			push_stack((a.is<double>() ? a.get<double>() : a.get<int64_t>())
 				/ (b.is<double>() ? b.get<double>() : b.get<int64_t>()));
 			break;
+		case TokenType::LESS:
+			push_stack((a.is<double>() ? a.get<double>() : a.get<int64_t>())
+				< (b.is<double>() ? b.get<double>() : b.get<int64_t>()));
+			break;
+		case TokenType::GREATER:
+			push_stack((a.is<double>() ? a.get<double>() : a.get<int64_t>())
+				> (b.is<double>() ? b.get<double>() : b.get<int64_t>()));
+			break;
+		case TokenType::GREATER_EQUAL:
+			push_stack((a.is<double>() ? a.get<double>() : a.get<int64_t>())
+				>= (b.is<double>() ? b.get<double>() : b.get<int64_t>()));
+			break;
+		case TokenType::LESS_EQUAL:
+			push_stack((a.is<double>() ? a.get<double>() : a.get<int64_t>())
+				<= (b.is<double>() ? b.get<double>() : b.get<int64_t>()));
+			break;
 		}
+		return Result::OK;
+	}
+
+	bool Emulator::equality() {
+		Value b = pop_stack();
+		Value a = pop_stack();
+
+		if (is_num(a) && is_num(b)) {
+			return (a.is<double>() ? a.get<double>() : a.get<int64_t>())
+				== (b.is<double>() ? b.get<double>() : b.get<int64_t>());
+		}
+		if (b.get_type() != a.get_type())
+				return false;
+		if (b.is<bool>())
+			return a.get<bool>() == b.get<bool>();
 	}
 
 	Result Emulator::run(const Unit* unit) {
@@ -65,21 +100,20 @@ namespace Tusk {
 				m_stack.push_back(read_value());
 				break;
 			case Instruction::ADD:
-				if (is_num(stack_top(1)) && is_num(stack_top()))
-					binary_operation(TokenType::PLUS);
-				else {
-					m_error_handler.report_error("Operands must be numbers", {}, ErrorType::RUNTIME_ERROR);
+				if (binary_operation(TokenType::PLUS) != Result::OK)
 					return Result::RUNTIME_ERROR;
-				}
 				break;
 			case Instruction::SUBTRACT:
-				binary_operation(TokenType::MINUS);
+				if (binary_operation(TokenType::MINUS) != Result::OK)
+					return Result::RUNTIME_ERROR;
 				break;
 			case Instruction::MULTIPLY:
-				binary_operation(TokenType::STAR);
+				if (binary_operation(TokenType::STAR) != Result::OK)
+					return Result::RUNTIME_ERROR;
 				break;
 			case Instruction::DIVIDE:
-				binary_operation(TokenType::SLASH);
+				if (binary_operation(TokenType::SLASH) != Result::OK)
+					return Result::RUNTIME_ERROR;
 				break;
 			case Instruction::RETURN:
 				//std::cout << pop_stack();
@@ -90,7 +124,7 @@ namespace Tusk {
 			case Instruction::POP:
 				pop_stack();
 				break;
-			case Instruction::NEGATE:
+			case Instruction::NEGATE: {
 				Value val = pop_stack();
 				if (val.is<int64_t>() || val.is<double>())
 					push_stack(-(val.is<int64_t>() ? val.get<int64_t>() : val.get<double>()));
@@ -99,6 +133,60 @@ namespace Tusk {
 					return Result::RUNTIME_ERROR;
 				}
 				break;
+			}
+			case Instruction::LESS:
+				if (binary_operation(TokenType::LESS) != Result::OK)
+					return Result::RUNTIME_ERROR;
+				break;
+			case Instruction::GREATER:
+				if (binary_operation(TokenType::GREATER) != Result::OK)
+					return Result::RUNTIME_ERROR;
+				break;
+			case Instruction::GREATER_EQUAL:
+				if (binary_operation(TokenType::GREATER_EQUAL) != Result::OK)
+					return Result::RUNTIME_ERROR;
+				break;
+			case Instruction::LESS_EQUAL:
+				if (binary_operation(TokenType::LESS_EQUAL) != Result::OK)
+					return Result::RUNTIME_ERROR;
+				break;
+			case Instruction::EQUAL:
+				push_stack(equality());
+				break;
+			case Instruction::NOT_EQUAL:
+				push_stack(!equality());
+				break;
+			case Instruction::NOT: {
+				Value val = pop_stack();
+				if (val.is<bool>())
+					push_stack(!val.get<bool>());
+				else {
+					m_error_handler.report_error("Operand must be boolean", {}, ErrorType::RUNTIME_ERROR);
+					return Result::RUNTIME_ERROR;
+				}
+				break;
+			}
+			case Instruction::VOID:
+				push_stack(Value(std::make_shared<VoidValue>()));
+				break;
+			case Instruction::MAKE_GLOBAL: {
+				std::shared_ptr<String> val = read_value().get_object<String>();
+				if (m_global_table.find(val->string) != m_global_table.end()) {
+					m_error_handler.report_error("Global name '" + val->string + "' already exists", {}, ErrorType::RUNTIME_ERROR);
+					return Result::RUNTIME_ERROR;
+				}
+				m_global_table[val->string] = pop_stack();
+				break;
+			}
+			case Instruction::GET_GLOBAL: {
+				std::shared_ptr<String> val = read_value().get_object<String>();
+				if (m_global_table.find(val->string) == m_global_table.end()) {
+					m_error_handler.report_error("Global name '" + val->string + "' does not exist", {}, ErrorType::RUNTIME_ERROR);
+					return Result::RUNTIME_ERROR;
+				}
+				push_stack(m_global_table[val->string]);
+				break;
+			}
 			}
 
 		}

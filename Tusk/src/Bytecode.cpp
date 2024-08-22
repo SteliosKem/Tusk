@@ -34,8 +34,38 @@ namespace Tusk {
 			case Instruction::POP:
 				out += instruction_str("POP");
 				break;
+			case Instruction::LOG:
+				out += instruction_str("LOG");
+				break;
 			case Instruction::NEGATE:
 				out += instruction_str("NEGATE");
+				break;
+			case Instruction::GREATER:
+				out += instruction_str("GREATER");
+				break;
+			case Instruction::GREATER_EQUAL:
+				out += instruction_str("GREATER_EQUAL");
+				break;
+			case Instruction::LESS:
+				out += instruction_str("LESS");
+				break;
+			case Instruction::LESS_EQUAL:
+				out += instruction_str("LESS_EQUAL");
+				break;
+			case Instruction::EQUAL:
+				out += instruction_str("EQUAL");
+				break;
+			case Instruction::NOT_EQUAL:
+				out += instruction_str("NOT_EQUAL");
+				break;
+			case Instruction::NOT:
+				out += instruction_str("NOT");
+				break;
+			case Instruction::AND:
+				out += instruction_str("AND");
+				break;
+			case Instruction::OR:
+				out += instruction_str("OR");
 				break;
 			default:
 				break;

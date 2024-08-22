@@ -14,6 +14,18 @@ namespace Tusk {
 		POP,
 		LOG,
 		NEGATE,
+		EQUAL,
+		NOT_EQUAL,
+		GREATER,
+		LESS,
+		GREATER_EQUAL,
+		LESS_EQUAL,
+		NOT,
+		AND,
+		OR,
+		VOID,
+		MAKE_GLOBAL,
+		GET_GLOBAL,
 	};
 
 	struct Unit {

@@ -28,6 +28,12 @@ namespace Tusk {
 		case NodeType::BOOL_VALUE:
 			boolean(std::static_pointer_cast<BoolValue>(expression));
 			break;
+		case NodeType::NAME:
+			name(std::static_pointer_cast<Name>(expression));
+			break;
+		case NodeType::VOID:
+			write((uint8_t)Instruction::VOID);
+			break;
 		}
 	}
 
@@ -47,6 +53,10 @@ namespace Tusk {
 		write((uint8_t)Instruction::VAL_INDEX, add_constant(boolean->value));
 	}
 
+	void Compiler::name(const std::shared_ptr<Name>& name) {
+		write((uint8_t)Instruction::GET_GLOBAL, add_constant(Value(std::make_shared<String>(name->string))));
+	}
+
 	void Compiler::binary_operation(const std::shared_ptr<BinaryOperation>& operation) {
 		expression(operation->left_expression);
 		expression(operation->right_expression);
@@ -63,6 +73,24 @@ namespace Tusk {
 			break;
 		case TokenType::SLASH:
 			write((uint8_t)Instruction::DIVIDE);
+			break;
+		case TokenType::EQUAL_EQUAL:
+			write((uint8_t)Instruction::EQUAL);
+			break;
+		case TokenType::BANG_EQUAL:
+			write((uint8_t)Instruction::NOT_EQUAL);
+			break;
+		case TokenType::GREATER:
+			write((uint8_t)Instruction::GREATER);
+			break;
+		case TokenType::LESS:
+			write((uint8_t)Instruction::LESS);
+			break;
+		case TokenType::GREATER_EQUAL:
+			write((uint8_t)Instruction::GREATER_EQUAL);
+			break;
+		case TokenType::LESS_EQUAL:
+			write((uint8_t)Instruction::LESS_EQUAL);
 			break;
 		default:
 			break;
@@ -91,6 +119,9 @@ namespace Tusk {
 		case NodeType::EXPRESSION_STATEMENT:
 			expression_statement(std::static_pointer_cast<ExpressionStatement>(statement));
 			break;
+		case NodeType::VARIABLE_DECLARATION:
+			variable_declaration(std::static_pointer_cast<VariableDeclaration>(statement));
+			break;
 		}
 	}
 	void Compiler::log_statement(const std::shared_ptr<LogStatement>& log_statement) {
@@ -100,5 +131,13 @@ namespace Tusk {
 	void Compiler::expression_statement(const std::shared_ptr<ExpressionStatement>& expression_statement) {
 		expression(expression_statement->expression);
 		write((uint8_t)Instruction::POP);
+	}
+
+	void Compiler::variable_declaration(const std::shared_ptr<VariableDeclaration>& variable_decl) {
+		if (variable_decl->value)
+			expression(variable_decl->value);
+		else
+			write((uint8_t)Instruction::VOID);
+		write((uint8_t)Instruction::MAKE_GLOBAL, add_constant(Value(std::make_shared<String>(variable_decl->variable_name))));
 	}
 }

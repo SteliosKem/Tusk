@@ -6,8 +6,15 @@
 #include "Bytecode.h"
 #include "Token.h"
 #include "Error.h"
+#include <unordered_map>
 
 namespace Tusk {
+	enum class OperationType {
+		ARITHMETIC,
+		RELATIONAL,
+		LOGICAL
+	};
+
 	enum class Result {
 		OK,
 		RUNTIME_ERROR
@@ -26,6 +33,9 @@ namespace Tusk {
 		uint32_t m_instruction_index{ 0 };
 		ErrorHandler& m_error_handler;
 
+		// TABLE
+		std::unordered_map<std::string, Value> m_global_table;
+
 		// UTIL
 		uint8_t next_byte();
 		const Value& read_value();
@@ -34,6 +44,7 @@ namespace Tusk {
 		Value& stack_top(uint32_t offset = 0) { return m_stack[m_stack.size() - 1 - offset]; }
 
 		//
-		void binary_operation(TokenType operation);
+		Result binary_operation(TokenType operation);
+		bool equality();
 	};
 }

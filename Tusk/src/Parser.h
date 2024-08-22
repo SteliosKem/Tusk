@@ -18,10 +18,13 @@ namespace Tusk {
 		BINARY_OPERATION,
 		UNARY_OPERATION,
 		BOOL_VALUE,
+		NAME,
+		VOID,
 
 		//STATEMENTS
 		LOG_STATEMENT,
 		EXPRESSION_STATEMENT,
+		VARIABLE_DECLARATION,
 	};
 
 	struct ASTNode {
@@ -81,6 +84,20 @@ namespace Tusk {
 		std::string to_string() const override { return value ? "true" : "false"; }
 	};
 
+	struct Name : public Expression {
+		std::string string;
+
+		Name(const std::string& val) : string{ val } {}
+		NodeType get_type() const override { return NodeType::NAME; }
+		std::string to_string() const override { return string; }
+	};
+
+	struct Void : public Expression {
+		Void() = default;
+		NodeType get_type() const override { return NodeType::VOID; }
+		std::string to_string() const override { return "void"; }
+	};
+
 	// STATEMENTS
 
 	struct Statement : public ASTNode {
@@ -102,6 +119,15 @@ namespace Tusk {
 		ExpressionStatement(const std::shared_ptr<Expression>& expr) : expression{ expr } {}
 		NodeType get_type() const override { return NodeType::EXPRESSION_STATEMENT; }
 		std::string to_string() const override { return "Expression " + expression->to_string() + "\n"; }
+	};
+
+	struct VariableDeclaration : public Statement {
+		std::string variable_name{ "" };
+		std::shared_ptr<Expression> value{ nullptr };		// OPTIONAL, WILL DO NULL CHECKING
+
+		VariableDeclaration(const std::string& name = "", const std::shared_ptr<Expression>& expr = nullptr) : variable_name{name}, value{expr} {}
+		NodeType get_type() const override { return NodeType::VARIABLE_DECLARATION; }
+		std::string to_string() const override { return "Variable declaration '" + variable_name + "' " + (value ? value->to_string() : "") + "\n"; }
 	};
 
 	// TREE
@@ -136,6 +162,10 @@ namespace Tusk {
 
 		// EXPRESSIONS
 		std::shared_ptr<Expression> expression();
+		std::shared_ptr<Expression> logical_and();
+		std::shared_ptr<Expression> equality();
+		std::shared_ptr<Expression> relational();
+		std::shared_ptr<Expression> arithmetic();
 		std::shared_ptr<Expression> term();
 		std::shared_ptr<Expression> factor();
 
@@ -143,5 +173,6 @@ namespace Tusk {
 		std::shared_ptr<Statement> statement();
 		std::shared_ptr<Statement> log_statement();
 		std::shared_ptr<Statement> expression_statement();
+		std::shared_ptr<Statement> variable_declaration();
 	};
 }
