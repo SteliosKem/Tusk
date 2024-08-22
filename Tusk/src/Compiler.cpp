@@ -122,6 +122,9 @@ namespace Tusk {
 		case NodeType::VARIABLE_DECLARATION:
 			variable_declaration(std::static_pointer_cast<VariableDeclaration>(statement));
 			break;
+		case NodeType::ASSIGNMENT:
+			assignment(std::static_pointer_cast<Assignment>(statement));
+			break;
 		}
 	}
 	void Compiler::log_statement(const std::shared_ptr<LogStatement>& log_statement) {
@@ -139,5 +142,10 @@ namespace Tusk {
 		else
 			write((uint8_t)Instruction::VOID);
 		write((uint8_t)Instruction::MAKE_GLOBAL, add_constant(Value(std::make_shared<String>(variable_decl->variable_name))));
+	}
+
+	void Compiler::assignment(const std::shared_ptr<Assignment>& assignment) {
+		expression(assignment->expression);
+		write((uint8_t)Instruction::SET_GLOBAL, add_constant(Value(std::make_shared<String>(assignment->name))));
 	}
 }

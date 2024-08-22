@@ -154,9 +154,11 @@ namespace Tusk {
 		if (tok.type == TokenType::KEYWORD) {
 			if (tok.value == "log")
 				stmt = log_statement();
-			else if(tok.value == "let")
+			else if (tok.value == "let")
 				stmt = variable_declaration();
 		}
+		else if ((m_current_index + 1 < m_tokens.size()) && tok.type == TokenType::ID && peek().type == TokenType::EQUAL)
+			stmt = assignment();
 		else
 			stmt = expression_statement();
 
@@ -189,5 +191,12 @@ namespace Tusk {
 		}
 
 		return declaration;
+	}
+
+	std::shared_ptr<Statement> Parser::assignment() {
+		const std::string& name = current_token().value;
+		advance();
+		advance();
+		return std::make_shared<Assignment>(name, expression());
 	}
 }

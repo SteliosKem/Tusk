@@ -34,5 +34,6 @@ namespace Tusk {
 		void log_statement(const std::shared_ptr<LogStatement>& log_statement);
 		void expression_statement(const std::shared_ptr<ExpressionStatement>& expression_statement);
 		void variable_declaration(const std::shared_ptr<VariableDeclaration>& variable_decl);
+		void assignment(const std::shared_ptr<Assignment>& variable_decl);
 	};
 }

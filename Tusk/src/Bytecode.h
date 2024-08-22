@@ -26,6 +26,7 @@ namespace Tusk {
 		VOID,
 		MAKE_GLOBAL,
 		GET_GLOBAL,
+		SET_GLOBAL
 	};
 
 	struct Unit {

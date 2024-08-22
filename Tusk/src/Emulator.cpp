@@ -187,6 +187,15 @@ namespace Tusk {
 				push_stack(m_global_table[val->string]);
 				break;
 			}
+			case Instruction::SET_GLOBAL: {
+				std::shared_ptr<String> val = read_value().get_object<String>();
+				if (m_global_table.find(val->string) == m_global_table.end()) {
+					m_error_handler.report_error("Global name '" + val->string + "' does not exist", {}, ErrorType::RUNTIME_ERROR);
+					return Result::RUNTIME_ERROR;
+				}
+				m_global_table[val->string] = pop_stack();
+				break;
+			}
 			}
 
 		}

@@ -25,6 +25,7 @@ namespace Tusk {
 		LOG_STATEMENT,
 		EXPRESSION_STATEMENT,
 		VARIABLE_DECLARATION,
+		ASSIGNMENT,
 	};
 
 	struct ASTNode {
@@ -130,6 +131,15 @@ namespace Tusk {
 		std::string to_string() const override { return "Variable declaration '" + variable_name + "' " + (value ? value->to_string() : "") + "\n"; }
 	};
 
+	struct Assignment : public Statement {
+		std::string name{ "" };
+		std::shared_ptr<Expression> expression;
+
+		Assignment(const std::string& name, const std::shared_ptr<Expression>& expr) : name{ name }, expression{ expr } {}
+		NodeType get_type() const override { return NodeType::ASSIGNMENT; }
+		std::string to_string() const override { return "Assignment " + expression->to_string() + " to: " + name; }
+	};
+
 	// TREE
 	struct AST : ASTNode {
 		std::vector<std::shared_ptr<Statement>> statements;
@@ -174,5 +184,6 @@ namespace Tusk {
 		std::shared_ptr<Statement> log_statement();
 		std::shared_ptr<Statement> expression_statement();
 		std::shared_ptr<Statement> variable_declaration();
+		std::shared_ptr<Statement> assignment();
 	};
 }

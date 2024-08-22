@@ -67,6 +67,18 @@ namespace Tusk {
 			case Instruction::OR:
 				out += instruction_str("OR");
 				break;
+			case Instruction::VOID:
+				out += instruction_str("VOID");
+				break;
+			case Instruction::MAKE_GLOBAL:
+				out += instruction_str("MAKE_GLOBAL");
+				break;
+			case Instruction::GET_GLOBAL:
+				out += instruction_str("GET_GLOBAL");
+				break;
+			case Instruction::SET_GLOBAL:
+				out += instruction_str("SET_GLOBAL");
+				break;
 			default:
 				break;
 			}
