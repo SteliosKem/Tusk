@@ -154,6 +154,7 @@ namespace Tusk {
 	}
 
 	std::shared_ptr<Statement> Parser::statement() {
+		bool expect_semicolon = true;
 		std::shared_ptr<Statement> stmt{ nullptr };
 		const Token& tok = current_token();
 		if (tok.type == TokenType::KEYWORD) {
@@ -161,13 +162,22 @@ namespace Tusk {
 				stmt = log_statement();
 			else if (tok.value == "let")
 				stmt = variable_declaration();
+			else if (tok.value == "if") {
+				stmt = if_statement();
+				expect_semicolon = false;
+			}
+			else {
+				m_error_handler.report_error("Unexpected '" + tok.value + "'", {tok.line}, ErrorType::COMPILE_ERROR);
+				return nullptr;
+			}
 		}
 		else if ((m_current_index + 1 < m_tokens.size()) && tok.type == TokenType::ID && peek().type == TokenType::EQUAL)
 			stmt = assignment();
 		else
 			stmt = expression_statement();
 
-		consume(TokenType::SEMICOLON, "Expected ';'");
+		if(expect_semicolon)
+			consume(TokenType::SEMICOLON, "Expected ';'");
 		return stmt;
 	}
 
@@ -203,5 +213,18 @@ namespace Tusk {
 		advance();
 		advance();
 		return std::make_shared<Assignment>(name, expression());
+	}
+
+	std::shared_ptr<Statement> Parser::if_statement() {
+		advance();
+		std::shared_ptr<Expression> condition = expression();
+		consume(TokenType::ARROW, "Expected '->'");
+		std::shared_ptr<Statement> body = statement();
+		std::shared_ptr<Statement> else_body = nullptr;
+		if (current_token().type == TokenType::KEYWORD && current_token().value == "else") {
+			advance();
+			else_body = statement();
+		}
+		return std::make_shared<IfStatement>(condition, body, else_body);
 	}
 }

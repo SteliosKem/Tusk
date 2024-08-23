@@ -27,6 +27,7 @@ namespace Tusk {
 		EXPRESSION_STATEMENT,
 		VARIABLE_DECLARATION,
 		ASSIGNMENT,
+		IF_STATEMENT,
 	};
 
 	struct ASTNode {
@@ -149,6 +150,17 @@ namespace Tusk {
 		std::string to_string() const override { return "Assignment " + expression->to_string() + " to: " + name; }
 	};
 
+	struct IfStatement : public Statement {
+		std::shared_ptr<Expression> condition;
+		std::shared_ptr<Statement> body;
+		std::shared_ptr<Statement> else_body{ nullptr };
+
+		IfStatement(const std::shared_ptr<Expression>& expr, const std::shared_ptr<Statement>& body, const std::shared_ptr<Statement>& else_body = nullptr)
+			: condition{ expr }, body{ body }, else_body{ else_body } {}
+		NodeType get_type() const override { return NodeType::IF_STATEMENT; }
+		std::string to_string() const override { return "If " + condition->to_string() + " then: " + body->to_string() + (else_body ? " else " + else_body->to_string() : ""); }
+	};
+
 	// TREE
 	struct AST : ASTNode {
 		std::vector<std::shared_ptr<Statement>> statements;
@@ -194,5 +206,6 @@ namespace Tusk {
 		std::shared_ptr<Statement> expression_statement();
 		std::shared_ptr<Statement> variable_declaration();
 		std::shared_ptr<Statement> assignment();
+		std::shared_ptr<Statement> if_statement();
 	};
 }

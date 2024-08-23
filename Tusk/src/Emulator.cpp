@@ -3,6 +3,12 @@
 #include <iostream>
 
 namespace Tusk {
+	inline bool is_true(const Value& val) {
+		if (val.is<bool>())
+			return val.get<bool>();
+		else return false;
+	}
+
 	inline bool is_num(const Value& val) {
 		return val.is<int64_t>() || val.is<double>();
 	}
@@ -194,6 +200,16 @@ namespace Tusk {
 					return Result::RUNTIME_ERROR;
 				}
 				m_global_table[val->string] = pop_stack();
+				break;
+			}
+			case Instruction::JUMP_IF_TRUE: {
+				int64_t val = read_value().get<int64_t>();
+				if (is_true(pop_stack()))
+					m_instruction_index = val;
+				break;
+			}
+			case Instruction::JUMP: {
+				m_instruction_index = read_value().get<int64_t>();
 				break;
 			}
 			}

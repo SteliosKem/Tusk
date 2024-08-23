@@ -108,6 +108,9 @@ namespace Tusk {
 		case TokenType::MINUS:
 			write((uint8_t)Instruction::NEGATE);
 			break;
+		case TokenType::BANG:
+			write((uint8_t)Instruction::NOT);
+			break;
 		default:
 			break;
 		}
@@ -127,6 +130,9 @@ namespace Tusk {
 			break;
 		case NodeType::ASSIGNMENT:
 			assignment(std::static_pointer_cast<Assignment>(statement));
+			break;
+		case NodeType::IF_STATEMENT:
+			if_statement(std::static_pointer_cast<IfStatement>(statement));
 			break;
 		}
 	}
@@ -150,5 +156,25 @@ namespace Tusk {
 	void Compiler::assignment(const std::shared_ptr<Assignment>& assignment) {
 		expression(assignment->expression);
 		write((uint8_t)Instruction::SET_GLOBAL, add_constant(Value(std::make_shared<String>(assignment->name))));
+	}
+
+	void Compiler::if_statement(const std::shared_ptr<IfStatement>& stmt) {
+		expression(stmt->condition);
+		write((uint8_t)Instruction::NOT);
+		uint8_t false_index = add_constant(m_bytecode_out.index());
+		write((uint8_t)Instruction::JUMP_IF_TRUE, false_index);
+		statement(stmt->body);
+		uint8_t end_index{ 0 };
+		if (stmt->else_body) {
+			end_index = add_constant(m_bytecode_out.index());
+			write((uint8_t)Instruction::JUMP, end_index);
+		}
+		
+		m_bytecode_out.get_values()[false_index] = m_bytecode_out.index();
+		if (stmt->else_body) {
+			
+			statement(stmt->else_body);
+			m_bytecode_out.get_values()[end_index] = m_bytecode_out.index();
+		}
 	}
 }
