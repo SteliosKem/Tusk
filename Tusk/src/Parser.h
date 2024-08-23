@@ -28,6 +28,7 @@ namespace Tusk {
 		VARIABLE_DECLARATION,
 		ASSIGNMENT,
 		IF_STATEMENT,
+		VOID_STATEMENT,
 	};
 
 	struct ASTNode {
@@ -159,6 +160,12 @@ namespace Tusk {
 			: condition{ expr }, body{ body }, else_body{ else_body } {}
 		NodeType get_type() const override { return NodeType::IF_STATEMENT; }
 		std::string to_string() const override { return "If " + condition->to_string() + " then: " + body->to_string() + (else_body ? " else " + else_body->to_string() : ""); }
+	};
+
+	struct VoidStatement : public Statement {
+		VoidStatement() = default;
+		NodeType get_type() const override { return NodeType::VOID_STATEMENT; }
+		std::string to_string() const override { return "Empty Statement"; }
 	};
 
 	// TREE

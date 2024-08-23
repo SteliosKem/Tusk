@@ -134,6 +134,8 @@ namespace Tusk {
 		case NodeType::IF_STATEMENT:
 			if_statement(std::static_pointer_cast<IfStatement>(statement));
 			break;
+		case NodeType::VOID_STATEMENT:
+			break;
 		}
 	}
 	void Compiler::log_statement(const std::shared_ptr<LogStatement>& log_statement) {

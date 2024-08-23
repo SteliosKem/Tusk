@@ -173,6 +173,10 @@ namespace Tusk {
 		}
 		else if ((m_current_index + 1 < m_tokens.size()) && tok.type == TokenType::ID && peek().type == TokenType::EQUAL)
 			stmt = assignment();
+		else if (current_token().type == TokenType::SEMICOLON) {
+			advance();
+			return std::make_shared<VoidStatement>();
+		}
 		else
 			stmt = expression_statement();
 
