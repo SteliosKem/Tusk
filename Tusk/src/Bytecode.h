@@ -29,6 +29,8 @@ namespace Tusk {
 		SET_GLOBAL,
 		JUMP,
 		JUMP_IF_TRUE,
+		SET_LOCAL,
+		GET_LOCAL,
 	};
 
 	struct Unit {

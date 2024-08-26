@@ -212,6 +212,16 @@ namespace Tusk {
 				m_instruction_index = read_value().get<int64_t>();
 				break;
 			}
+			case Instruction::SET_LOCAL: {
+				int64_t val = read_value().get<int64_t>();
+				m_stack[val] = stack_top();
+				break;
+			}
+			case Instruction::GET_LOCAL: {
+				int64_t val = read_value().get<int64_t>();
+				push_stack(m_stack[val]);
+				break;
+			}
 			}
 
 		}

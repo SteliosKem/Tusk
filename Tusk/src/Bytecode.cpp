@@ -90,6 +90,14 @@ namespace Tusk {
 				i++;
 				out += std::to_string(i) + " " + complex_str("JUMP", m_values[m_bytecode[i]].get<int64_t>());
 				break;
+			case Instruction::GET_LOCAL:
+				i++;
+				out += std::to_string(i) + " " + instruction_str("GET_LOCAL");
+				break;
+			case Instruction::SET_LOCAL:
+				i++;
+				out += std::to_string(i) + " " + instruction_str("SET_LOCAL");
+				break;
 			default:
 				break;
 			}

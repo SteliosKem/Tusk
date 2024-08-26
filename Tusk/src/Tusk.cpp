@@ -42,14 +42,21 @@ int main()
                 std::cout << "NODES:\n";
                 std::cout << ast->to_string() << '\n';
 
-                Compiler compiler(ast);
+                Compiler compiler(ast, handler);
+                
                 const Unit& byte_code = compiler.compile();
-                std::cout << "BYTECODE:\n" << byte_code.disassemble();
-
-                if(emulator.run(&byte_code) != Result::OK)
+                if (handler.has_errors())
                     for (const Error& error : handler.get_errors()) {
                         std::cout << ErrorHandler::string_basic_with_type(error) << '\n';
                     }
+                else {
+                    std::cout << "BYTECODE:\n" << byte_code.disassemble();
+
+                    if (emulator.run(&byte_code) != Result::OK)
+                        for (const Error& error : handler.get_errors()) {
+                            std::cout << ErrorHandler::string_basic_with_type(error) << '\n';
+                        }
+                }
             }
         }
         handler.clear();

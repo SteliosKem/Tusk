@@ -2,24 +2,40 @@
 #include "Bytecode.h"
 #include "Parser.h"
 #include "Value.h"
-
+#include <unordered_map>
 
 namespace Tusk {
 	class Optimizer {};
 
 	class Compiler {
 	public:
-		Compiler(const std::shared_ptr<AST>& tree) : m_ast{ tree } {}
+		Compiler(const std::shared_ptr<AST>& tree, ErrorHandler& handler) : m_ast{ tree }, m_error_handler { handler } {}
 
 		const Unit& compile();
 	private:
 		std::shared_ptr<AST> m_ast;
 		Unit m_bytecode_out;
+		ErrorHandler& m_error_handler;
 
 		// UTILS
 		void write(uint8_t byte);						// Writes one byte to the bytecode
 		void write(uint8_t byte_a, uint8_t byte_b);		// Writes two bytes to the bytecode
 		uint8_t add_constant(Value value);				// Adds a constant to the constant pool and returns its index
+
+		struct LocalName {
+			std::string name;
+			uint8_t index;
+			int32_t scope_depth;
+		};
+
+		int32_t find_local(const std::string& name);
+
+		int32_t m_current_scope = -1;
+
+		std::vector<LocalName> m_locals;
+
+		std::vector<std::string> m_globals;
+		//std::vector<std::vector<std::string>> m_locals;	// Stack behaviour for nested blocks
 
 		// Expressions
 		void expression(const std::shared_ptr<Expression>& expression);

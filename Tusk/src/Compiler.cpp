@@ -56,8 +56,30 @@ namespace Tusk {
 		write((uint8_t)Instruction::VAL_INDEX, add_constant(boolean->value));
 	}
 
+	int32_t Compiler::find_local(const std::string& name) {
+		for (int32_t i = 0; i < m_locals.size(); i++)
+			if (m_locals[i].name == name)
+				return i;
+		return -1;
+	}
+
 	void Compiler::name(const std::shared_ptr<Name>& name) {
-		write((uint8_t)Instruction::GET_GLOBAL, add_constant(Value(std::make_shared<String>(name->string))));
+		int64_t local_idx = -1;
+		// THIS CODE DOES IS NOT WANTED FOR THE REPL
+
+		/*if(std::find(m_globals.begin(), m_globals.end(), name->string) != m_globals.end())
+			write((uint8_t)Instruction::GET_GLOBAL, add_constant(Value(std::make_shared<String>(name->string))));
+		else if ((local_idx = find_local(name->string)) != -1)
+			write((uint8_t)Instruction::GET_LOCAL, add_constant(Value(local_idx)));
+		else {
+			m_error_handler.report_error("Name '" + name->string + "' does not exist in this scope", {}, ErrorType::COMPILE_ERROR);
+		}*/
+
+		
+		if ((local_idx = find_local(name->string)) != -1)
+			write((uint8_t)Instruction::GET_LOCAL, add_constant(Value(local_idx)));
+		else
+			write((uint8_t)Instruction::GET_GLOBAL, add_constant(Value(std::make_shared<String>(name->string))));
 	}
 
 	void Compiler::binary_operation(const std::shared_ptr<BinaryOperation>& operation) {
@@ -154,16 +176,48 @@ namespace Tusk {
 	}
 
 	void Compiler::variable_declaration(const std::shared_ptr<VariableDeclaration>& variable_decl) {
-		if (variable_decl->value)
-			expression(variable_decl->value);
-		else
-			write((uint8_t)Instruction::VOID);
-		write((uint8_t)Instruction::MAKE_GLOBAL, add_constant(Value(std::make_shared<String>(variable_decl->variable_name))));
+		if (m_current_scope == -1) {
+			// THIS CODE DOES IS NOT WANTED FOR THE REPL
+
+			/*if (std::find(m_globals.begin(), m_globals.end(), variable_decl->variable_name) != m_globals.end()) {
+				m_error_handler.report_error("Global name '" + variable_decl->variable_name + "' already exists", {}, ErrorType::COMPILE_ERROR);
+			}*/
+
+
+			if (variable_decl->value)
+				expression(variable_decl->value);
+			else
+				write((uint8_t)Instruction::VOID);
+			write((uint8_t)Instruction::MAKE_GLOBAL, add_constant(Value(std::make_shared<String>(variable_decl->variable_name))));
+			m_globals.push_back(variable_decl->variable_name);
+		}
+		else {
+			if (variable_decl->value)
+				expression(variable_decl->value);
+			else
+				write((uint8_t)Instruction::VOID);
+			m_locals.push_back(LocalName{variable_decl->variable_name, (uint8_t)(m_locals.size() - 1), m_current_scope});
+			write((uint8_t)Instruction::SET_LOCAL, add_constant((int64_t)(m_locals.size() - 1)));
+		}
 	}
 
 	void Compiler::assignment(const std::shared_ptr<Assignment>& assignment) {
 		expression(assignment->expression);
-		write((uint8_t)Instruction::SET_GLOBAL, add_constant(Value(std::make_shared<String>(assignment->name))));
+		int64_t local_idx = -1;
+		
+		// THIS CODE DOES IS NOT WANTED FOR THE REPL
+		/*if (std::find(m_globals.begin(), m_globals.end(), assignment->name) != m_globals.end())
+			write((uint8_t)Instruction::SET_GLOBAL, add_constant(Value(std::make_shared<String>(assignment->name))));
+		else if ((local_idx = find_local(assignment->name)) != -1)
+			write((uint8_t)Instruction::SET_LOCAL, add_constant(Value(local_idx)));
+		else
+			m_error_handler.report_error("Name '" + assignment->name + "' does not exist in this scope", {}, ErrorType::COMPILE_ERROR);*/
+
+		
+		if ((local_idx = find_local(assignment->name)) != -1)
+			write((uint8_t)Instruction::SET_LOCAL, add_constant(Value(local_idx)));
+		else
+			write((uint8_t)Instruction::SET_GLOBAL, add_constant(Value(std::make_shared<String>(assignment->name))));
 	}
 
 	void Compiler::if_statement(const std::shared_ptr<IfStatement>& stmt) {
@@ -198,8 +252,16 @@ namespace Tusk {
 	}
 
 	void Compiler::compount_statement(const std::shared_ptr<CompountStatement>& compount) {
+		m_current_scope++;
 		for (const auto& stmt : compount->statements) {
 			statement(stmt);
 		}
+		m_current_scope--;
+		for (int64_t i = m_locals.size() - 1; m_locals.size() > 0; m_locals.pop_back(), i--) {
+			if (m_locals[i].scope_depth <= m_current_scope)
+				break;
+			write((uint8_t)Instruction::POP);
+		}
+		
 	}
 }
