@@ -36,5 +36,6 @@ namespace Tusk {
 		void variable_declaration(const std::shared_ptr<VariableDeclaration>& variable_decl);
 		void assignment(const std::shared_ptr<Assignment>& assignment);
 		void if_statement(const std::shared_ptr<IfStatement>& statement);
+		void while_statement(const std::shared_ptr<WhileStatement>& statement);
 	};
 }

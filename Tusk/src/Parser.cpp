@@ -166,6 +166,10 @@ namespace Tusk {
 				stmt = if_statement();
 				expect_semicolon = false;
 			}
+			else if (tok.value == "while") {
+				stmt = while_statement();
+				expect_semicolon = false;
+			}
 			else {
 				m_error_handler.report_error("Unexpected '" + tok.value + "'", {tok.line}, ErrorType::COMPILE_ERROR);
 				return nullptr;
@@ -230,5 +234,14 @@ namespace Tusk {
 			else_body = statement();
 		}
 		return std::make_shared<IfStatement>(condition, body, else_body);
+	}
+
+	std::shared_ptr<Statement> Parser::while_statement() {
+		advance();
+		std::shared_ptr<Expression> condition = expression();
+		consume(TokenType::ARROW, "Expected '->'");
+		std::shared_ptr<Statement> body = statement();
+
+		return std::make_shared<WhileStatement>(condition, body);
 	}
 }

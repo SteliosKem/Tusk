@@ -29,6 +29,7 @@ namespace Tusk {
 		ASSIGNMENT,
 		IF_STATEMENT,
 		VOID_STATEMENT,
+		WHILE_STATEMENT,
 	};
 
 	struct ASTNode {
@@ -168,6 +169,16 @@ namespace Tusk {
 		std::string to_string() const override { return "Empty Statement"; }
 	};
 
+	struct WhileStatement : public Statement {
+		std::shared_ptr<Expression> condition;
+		std::shared_ptr<Statement> body;
+
+		WhileStatement(const std::shared_ptr<Expression>& expr, const std::shared_ptr<Statement>& body, const std::shared_ptr<Statement>& else_body = nullptr)
+			: condition{ expr }, body{ body } {}
+		NodeType get_type() const override { return NodeType::WHILE_STATEMENT; }
+		std::string to_string() const override { return "While " + condition->to_string() + " do: " + body->to_string(); }
+	};
+
 	// TREE
 	struct AST : ASTNode {
 		std::vector<std::shared_ptr<Statement>> statements;
@@ -214,5 +225,6 @@ namespace Tusk {
 		std::shared_ptr<Statement> variable_declaration();
 		std::shared_ptr<Statement> assignment();
 		std::shared_ptr<Statement> if_statement();
+		std::shared_ptr<Statement> while_statement();
 	};
 }
