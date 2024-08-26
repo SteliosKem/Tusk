@@ -202,9 +202,9 @@ namespace Tusk {
 				m_global_table[val->string] = pop_stack();
 				break;
 			}
-			case Instruction::JUMP_IF_TRUE: {
+			case Instruction::JUMP_IF_FALSE: {
 				int64_t val = read_value().get<int64_t>();
-				if (is_true(pop_stack()))
+				if (!is_true(pop_stack()))
 					m_instruction_index = val;
 				break;
 			}

@@ -222,9 +222,8 @@ namespace Tusk {
 
 	void Compiler::if_statement(const std::shared_ptr<IfStatement>& stmt) {
 		expression(stmt->condition);
-		write((uint8_t)Instruction::NOT);
 		uint8_t false_index = add_constant(m_bytecode_out.index());
-		write((uint8_t)Instruction::JUMP_IF_TRUE, false_index);
+		write((uint8_t)Instruction::JUMP_IF_FALSE, false_index);
 		statement(stmt->body);
 		uint8_t end_index{ 0 };
 		if (stmt->else_body) {
@@ -243,9 +242,8 @@ namespace Tusk {
 	void Compiler::while_statement(const std::shared_ptr<WhileStatement>& stmt) {
 		uint8_t top_of_loop = add_constant(m_bytecode_out.index());
 		expression(stmt->condition);
-		write((uint8_t)Instruction::NOT);
 		uint8_t false_index = add_constant(m_bytecode_out.index());
-		write((uint8_t)Instruction::JUMP_IF_TRUE, false_index);
+		write((uint8_t)Instruction::JUMP_IF_FALSE, false_index);
 		statement(stmt->body);
 		write((uint8_t)Instruction::JUMP, top_of_loop);
 		m_bytecode_out.get_values()[false_index] = m_bytecode_out.index();

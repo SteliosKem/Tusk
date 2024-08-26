@@ -82,9 +82,9 @@ namespace Tusk {
 			case Instruction::SET_GLOBAL:
 				out += std::to_string(i) + " " + instruction_str("SET_GLOBAL");
 				break;
-			case Instruction::JUMP_IF_TRUE:
+			case Instruction::JUMP_IF_FALSE:
 				i++;
-				out += std::to_string(i) + " " + complex_str("JUMP_IF_TRUE", m_values[m_bytecode[i]].get<int64_t>());
+				out += std::to_string(i) + " " + complex_str("JUMP_IF_FALSE", m_values[m_bytecode[i]].get<int64_t>());
 				break;
 			case Instruction::JUMP:
 				i++;

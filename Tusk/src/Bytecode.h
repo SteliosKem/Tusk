@@ -28,7 +28,7 @@ namespace Tusk {
 		GET_GLOBAL,
 		SET_GLOBAL,
 		JUMP,
-		JUMP_IF_TRUE,
+		JUMP_IF_FALSE,
 		SET_LOCAL,
 		GET_LOCAL,
 	};
