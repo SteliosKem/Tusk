@@ -31,6 +31,8 @@ namespace Tusk {
 		IF_STATEMENT,
 		VOID_STATEMENT,
 		WHILE_STATEMENT,
+		BREAK_STATEMENT,
+		CONTINUE_STATEMENT
 	};
 
 	struct ASTNode {
@@ -186,6 +188,16 @@ namespace Tusk {
 			: condition{ expr }, body{ body } {}
 		NodeType get_type() const override { return NodeType::WHILE_STATEMENT; }
 		std::string to_string() const override { return "While " + condition->to_string() + " do: " + body->to_string(); }
+	};
+
+	struct BreakStatement : public Statement {
+		NodeType get_type() const override { return NodeType::BREAK_STATEMENT; }
+		std::string to_string() const override { return "Break\n"; }
+	};
+
+	struct ContinueStatement : public Statement {
+		NodeType get_type() const override { return NodeType::CONTINUE_STATEMENT; }
+		std::string to_string() const override { return "Continue\n"; }
 	};
 
 	// TREE

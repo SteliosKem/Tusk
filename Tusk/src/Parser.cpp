@@ -166,6 +166,14 @@ namespace Tusk {
 				stmt = log_statement();
 			else if (tok.value == "let")
 				stmt = variable_declaration();
+			else if (tok.value == "break") {
+				stmt = std::make_shared<BreakStatement>();
+				advance();
+			}
+			else if (tok.value == "continue") {
+				stmt = std::make_shared<ContinueStatement>();
+				advance();
+			}
 			else if (tok.value == "if") {
 				stmt = if_statement();
 				expect_semicolon = false;

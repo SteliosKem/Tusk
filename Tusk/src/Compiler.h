@@ -29,13 +29,16 @@ namespace Tusk {
 		};
 
 		int32_t find_local(const std::string& name);
-
 		int32_t m_current_scope = -1;
-
 		std::vector<LocalName> m_locals;
-
 		std::vector<std::string> m_globals;
-		//std::vector<std::vector<std::string>> m_locals;	// Stack behaviour for nested blocks
+
+		struct Loop {
+			uint8_t condition_index;
+			uint8_t end_index;
+		};
+
+		std::vector<Loop> m_loop_stack;
 
 		// Expressions
 		void expression(const std::shared_ptr<Expression>& expression);
@@ -54,5 +57,7 @@ namespace Tusk {
 		void if_statement(const std::shared_ptr<IfStatement>& statement);
 		void while_statement(const std::shared_ptr<WhileStatement>& statement);
 		void compount_statement(const std::shared_ptr<CompountStatement>& statement);
+		void break_statement(const std::shared_ptr<BreakStatement>& break_stmt);
+		void continue_statement(const std::shared_ptr<ContinueStatement>& continue_stmt);
 	};
 }

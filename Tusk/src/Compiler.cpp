@@ -65,21 +65,13 @@ namespace Tusk {
 
 	void Compiler::name(const std::shared_ptr<Name>& name) {
 		int64_t local_idx = -1;
-		// THIS CODE DOES IS NOT WANTED FOR THE REPL
-
-		/*if(std::find(m_globals.begin(), m_globals.end(), name->string) != m_globals.end())
+		if(std::find(m_globals.begin(), m_globals.end(), name->string) != m_globals.end())
 			write((uint8_t)Instruction::GET_GLOBAL, add_constant(Value(std::make_shared<String>(name->string))));
 		else if ((local_idx = find_local(name->string)) != -1)
 			write((uint8_t)Instruction::GET_LOCAL, add_constant(Value(local_idx)));
 		else {
 			m_error_handler.report_error("Name '" + name->string + "' does not exist in this scope", {}, ErrorType::COMPILE_ERROR);
-		}*/
-
-		
-		if ((local_idx = find_local(name->string)) != -1)
-			write((uint8_t)Instruction::GET_LOCAL, add_constant(Value(local_idx)));
-		else
-			write((uint8_t)Instruction::GET_GLOBAL, add_constant(Value(std::make_shared<String>(name->string))));
+		}
 	}
 
 	void Compiler::binary_operation(const std::shared_ptr<BinaryOperation>& operation) {
@@ -162,6 +154,12 @@ namespace Tusk {
 		case NodeType::COMPOUNT_STATEMENT:
 			compount_statement(std::static_pointer_cast<CompountStatement>(statement));
 			break;
+		case NodeType::BREAK_STATEMENT:
+			break_statement(std::static_pointer_cast<BreakStatement>(statement));
+			break;
+		case NodeType::CONTINUE_STATEMENT:
+			continue_statement(std::static_pointer_cast<ContinueStatement>(statement));
+			break;
 		case NodeType::VOID_STATEMENT:
 			break;
 		}
@@ -177,11 +175,9 @@ namespace Tusk {
 
 	void Compiler::variable_declaration(const std::shared_ptr<VariableDeclaration>& variable_decl) {
 		if (m_current_scope == -1) {
-			// THIS CODE DOES IS NOT WANTED FOR THE REPL
-
-			/*if (std::find(m_globals.begin(), m_globals.end(), variable_decl->variable_name) != m_globals.end()) {
+			if (std::find(m_globals.begin(), m_globals.end(), variable_decl->variable_name) != m_globals.end()) {
 				m_error_handler.report_error("Global name '" + variable_decl->variable_name + "' already exists", {}, ErrorType::COMPILE_ERROR);
-			}*/
+			}
 
 
 			if (variable_decl->value)
@@ -204,20 +200,12 @@ namespace Tusk {
 	void Compiler::assignment(const std::shared_ptr<Assignment>& assignment) {
 		expression(assignment->expression);
 		int64_t local_idx = -1;
-		
-		// THIS CODE DOES IS NOT WANTED FOR THE REPL
-		/*if (std::find(m_globals.begin(), m_globals.end(), assignment->name) != m_globals.end())
+		if (std::find(m_globals.begin(), m_globals.end(), assignment->name) != m_globals.end())
 			write((uint8_t)Instruction::SET_GLOBAL, add_constant(Value(std::make_shared<String>(assignment->name))));
 		else if ((local_idx = find_local(assignment->name)) != -1)
 			write((uint8_t)Instruction::SET_LOCAL, add_constant(Value(local_idx)));
 		else
-			m_error_handler.report_error("Name '" + assignment->name + "' does not exist in this scope", {}, ErrorType::COMPILE_ERROR);*/
-
-		
-		if ((local_idx = find_local(assignment->name)) != -1)
-			write((uint8_t)Instruction::SET_LOCAL, add_constant(Value(local_idx)));
-		else
-			write((uint8_t)Instruction::SET_GLOBAL, add_constant(Value(std::make_shared<String>(assignment->name))));
+			m_error_handler.report_error("Name '" + assignment->name + "' does not exist in this scope", {}, ErrorType::COMPILE_ERROR);
 	}
 
 	void Compiler::if_statement(const std::shared_ptr<IfStatement>& stmt) {
@@ -243,10 +231,12 @@ namespace Tusk {
 		uint8_t top_of_loop = add_constant(m_bytecode_out.index());
 		expression(stmt->condition);
 		uint8_t false_index = add_constant(m_bytecode_out.index());
+		m_loop_stack.push_back({top_of_loop, false_index});
 		write((uint8_t)Instruction::JUMP_IF_FALSE, false_index);
 		statement(stmt->body);
 		write((uint8_t)Instruction::JUMP, top_of_loop);
 		m_bytecode_out.get_values()[false_index] = m_bytecode_out.index();
+		
 	}
 
 	void Compiler::compount_statement(const std::shared_ptr<CompountStatement>& compount) {
@@ -261,5 +251,20 @@ namespace Tusk {
 			write((uint8_t)Instruction::POP);
 		}
 		
+	}
+
+	void Compiler::break_statement(const std::shared_ptr<BreakStatement>& break_stmt) {
+		if (m_loop_stack.empty()) {
+			m_error_handler.report_error("Cannot use 'break' outside loops", {}, ErrorType::COMPILE_ERROR);
+			return;
+		}
+		write((uint8_t)Instruction::JUMP, m_loop_stack[m_loop_stack.size() - 1].end_index);
+	}
+	void Compiler::continue_statement(const std::shared_ptr<ContinueStatement>& continue_stmt) {
+		if (m_loop_stack.empty()) {
+			m_error_handler.report_error("Cannot use 'continue' outside loops", {}, ErrorType::COMPILE_ERROR);
+			return;
+		}
+		write((uint8_t)Instruction::JUMP, m_loop_stack[m_loop_stack.size() - 1].condition_index);
 	}
 }
