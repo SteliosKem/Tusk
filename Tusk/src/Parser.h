@@ -23,6 +23,7 @@ namespace Tusk {
 		STRING,
 
 		//STATEMENTS
+		COMPOUNT_STATEMENT,
 		LOG_STATEMENT,
 		EXPRESSION_STATEMENT,
 		VARIABLE_DECLARATION,
@@ -116,6 +117,14 @@ namespace Tusk {
 	struct Statement : public ASTNode {
 		NodeType get_type() const override { return NodeType::STATEMENT; }
 		std::string to_string() const override { return "Statement"; }
+	};
+
+	struct CompountStatement : public Statement {
+		std::vector<std::shared_ptr<Statement>> statements;
+
+		CompountStatement(const std::vector<std::shared_ptr<Statement>>& stmts) : statements{ stmts } {}
+		NodeType get_type() const override { return NodeType::COMPOUNT_STATEMENT; }
+		std::string to_string() const override { std::string i; for (const auto& s : statements) i += s->to_string(); return "Compount Statement: " + i; }
 	};
 
 	struct LogStatement : public Statement {
@@ -220,6 +229,7 @@ namespace Tusk {
 
 		// STATEMENTS
 		std::shared_ptr<Statement> statement();
+		std::shared_ptr<Statement> compount_statement();
 		std::shared_ptr<Statement> log_statement();
 		std::shared_ptr<Statement> expression_statement();
 		std::shared_ptr<Statement> variable_declaration();

@@ -157,7 +157,11 @@ namespace Tusk {
 		bool expect_semicolon = true;
 		std::shared_ptr<Statement> stmt{ nullptr };
 		const Token& tok = current_token();
-		if (tok.type == TokenType::KEYWORD) {
+		if (tok.type == TokenType::L_BRACE) {
+			stmt = compount_statement();
+			expect_semicolon = false;
+		}
+		else if (tok.type == TokenType::KEYWORD) {
 			if (tok.value == "log")
 				stmt = log_statement();
 			else if (tok.value == "let")
@@ -243,5 +247,21 @@ namespace Tusk {
 		std::shared_ptr<Statement> body = statement();
 
 		return std::make_shared<WhileStatement>(condition, body);
+	}
+
+	std::shared_ptr<Statement> Parser::compount_statement() {
+		advance();
+		std::vector<std::shared_ptr<Statement>> statements;
+		while (current_token().type != TokenType::R_BRACE && current_token().type != TokenType::_EOF)
+			statements.push_back(statement());
+
+		if (current_token().type == TokenType::_EOF) {
+			m_error_handler.report_error("Expected '}'", { current_token().line }, ErrorType::COMPILE_ERROR);
+			return nullptr;
+		}
+		else
+			advance();
+
+		return std::make_shared<CompountStatement>(statements);
 	}
 }

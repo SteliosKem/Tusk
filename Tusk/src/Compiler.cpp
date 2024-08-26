@@ -137,6 +137,9 @@ namespace Tusk {
 		case NodeType::WHILE_STATEMENT:
 			while_statement(std::static_pointer_cast<WhileStatement>(statement));
 			break;
+		case NodeType::COMPOUNT_STATEMENT:
+			compount_statement(std::static_pointer_cast<CompountStatement>(statement));
+			break;
 		case NodeType::VOID_STATEMENT:
 			break;
 		}
@@ -182,6 +185,7 @@ namespace Tusk {
 			m_bytecode_out.get_values()[end_index] = m_bytecode_out.index();
 		}
 	}
+
 	void Compiler::while_statement(const std::shared_ptr<WhileStatement>& stmt) {
 		uint8_t top_of_loop = add_constant(m_bytecode_out.index());
 		expression(stmt->condition);
@@ -191,5 +195,11 @@ namespace Tusk {
 		statement(stmt->body);
 		write((uint8_t)Instruction::JUMP, top_of_loop);
 		m_bytecode_out.get_values()[false_index] = m_bytecode_out.index();
+	}
+
+	void Compiler::compount_statement(const std::shared_ptr<CompountStatement>& compount) {
+		for (const auto& stmt : compount->statements) {
+			statement(stmt);
+		}
 	}
 }
