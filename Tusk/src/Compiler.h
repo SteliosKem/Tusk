@@ -16,11 +16,18 @@ namespace Tusk {
 		std::shared_ptr<AST> m_ast;
 		Unit m_bytecode_out;
 		ErrorHandler& m_error_handler;
+		std::vector<Unit*> m_unit_stack;
 
 		// UTILS
 		void write(uint8_t byte);						// Writes one byte to the bytecode
 		void write(uint8_t byte_a, uint8_t byte_b);		// Writes two bytes to the bytecode
 		uint8_t add_constant(Value value);				// Adds a constant to the constant pool and returns its index
+		void push_unit(Unit* unit) {					// New unit for functions, write outputs to outermost unit
+			m_unit_stack.push_back(unit);
+		}
+		void pop_unit() {
+			m_unit_stack.pop_back();
+		}
 
 		struct LocalName {
 			std::string name;
@@ -59,5 +66,6 @@ namespace Tusk {
 		void compount_statement(const std::shared_ptr<CompountStatement>& statement);
 		void break_statement(const std::shared_ptr<BreakStatement>& break_stmt);
 		void continue_statement(const std::shared_ptr<ContinueStatement>& continue_stmt);
+		void function_declaration(const std::shared_ptr<FunctionDeclaration>& function_decl);
 	};
 }

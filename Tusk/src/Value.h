@@ -4,6 +4,7 @@
 #include <iostream>
 
 namespace Tusk {
+	struct Unit;
 	enum class ObjectType {
 		OBJECT,
 		STRING,
@@ -28,6 +29,15 @@ namespace Tusk {
 		ObjectType get_type() const override { return ObjectType::STRING; }
 	};
 
+	struct Function : public ValueObject {
+		std::string function_name{ "" };
+		uint32_t arg_count{ 0 };
+		std::shared_ptr<Unit> code_unit;
+
+		Function(const std::string& str = "", uint32_t arg_count = 0) : function_name{ str }, arg_count{ arg_count } {}
+		ObjectType get_type() const override { return ObjectType::FUNCTION; }
+	};
+
 	class Value {
 	public:
 		Value(int64_t integer) : m_value{ integer } {}
@@ -35,6 +45,7 @@ namespace Tusk {
 		Value(bool boolean) : m_value{ boolean } {}
 		Value(const std::shared_ptr<ValueObject>& object) : m_value{ object } {}
 		Value(const std::string& str) : m_value{ std::make_shared<String>(str) } {}
+		Value(nullptr_t) : m_value{ std::make_shared<VoidValue>() } {}
 		Value() = default;
 
 		template<typename T>
@@ -84,6 +95,9 @@ namespace Tusk {
 					break;
 				case ObjectType::VOID:
 					os << "void";
+					break;
+				case ObjectType::FUNCTION:
+					os << "<function " + value.get_object<Function>()->function_name + ">";
 					break;
 				}
 			}

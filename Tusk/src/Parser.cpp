@@ -178,6 +178,10 @@ namespace Tusk {
 				stmt = if_statement();
 				expect_semicolon = false;
 			}
+			else if (tok.value == "fn") {
+				stmt = function();
+				expect_semicolon = false;
+			}
 			else if (tok.value == "while") {
 				stmt = while_statement();
 				expect_semicolon = false;
@@ -271,5 +275,42 @@ namespace Tusk {
 			advance();
 
 		return std::make_shared<CompountStatement>(statements);
+	}
+
+	std::shared_ptr<Statement> Parser::function() {
+		advance();
+		const Token& tok = current_token();
+		consume(TokenType::ID, "Expected identifier");
+
+		std::string name = tok.value;
+		std::vector<std::shared_ptr<Argument>> args;
+		if (current_token().type == TokenType::L_PAR) {
+			advance();
+			const Token* tok = &current_token();
+			while (current_token().type != TokenType::R_PAR && current_token().type != TokenType::_EOF) {
+				tok = &current_token();
+				if (tok->type != TokenType::ID) {
+					consume(TokenType::ID, "Expected argument name");
+					return nullptr;
+				}
+				else
+					advance();
+				
+				std::shared_ptr<Expression> expr{ nullptr };
+				if (current_token().type == TokenType::EQUAL) {
+					advance();
+					expr = expression();
+				}
+				if (current_token().type == TokenType::COMMA)
+					advance();
+
+				args.push_back(std::make_shared<Argument>(tok->value, expr));
+			}
+			consume(TokenType::R_PAR, "Expected ')'");
+		}
+		consume(TokenType::ARROW, "Expected '->'");
+		std::shared_ptr<Statement> stmt = statement();
+
+		return std::make_shared<FunctionDeclaration>(name, args, stmt);
 	}
 }

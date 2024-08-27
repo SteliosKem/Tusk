@@ -32,7 +32,8 @@ namespace Tusk {
 		VOID_STATEMENT,
 		WHILE_STATEMENT,
 		BREAK_STATEMENT,
-		CONTINUE_STATEMENT
+		CONTINUE_STATEMENT,
+		FUNCTION_DECLARATION,
 	};
 
 	struct ASTNode {
@@ -200,6 +201,26 @@ namespace Tusk {
 		std::string to_string() const override { return "Continue\n"; }
 	};
 
+	struct Argument {
+		std::string name = "";
+		std::shared_ptr<Expression> default_value{ nullptr };
+	};
+
+	struct FunctionDeclaration : public Statement {
+		std::string function_name{ "" };
+		std::vector<std::shared_ptr<Argument>> arguments;
+		std::shared_ptr<Statement> body;
+
+		FunctionDeclaration(const std::string& name, const std::vector<std::shared_ptr<Argument>>& args, const std::shared_ptr<Statement>& body)
+			: function_name{ name }, arguments{ args }, body{ body } {}
+		NodeType get_type() const override { return NodeType::FUNCTION_DECLARATION; }
+		std::string to_string() const override { 
+			std::string args = "";
+			for (const auto& arg : arguments)
+				args += arg->name + ", ";
+			return "Function declaration '" + function_name + "' (" + args + ") " + body->to_string(); }
+	};
+
 	// TREE
 	struct AST : ASTNode {
 		std::vector<std::shared_ptr<Statement>> statements;
@@ -248,5 +269,6 @@ namespace Tusk {
 		std::shared_ptr<Statement> assignment();
 		std::shared_ptr<Statement> if_statement();
 		std::shared_ptr<Statement> while_statement();
+		std::shared_ptr<Statement> function();
 	};
 }

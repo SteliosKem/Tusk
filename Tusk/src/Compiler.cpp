@@ -2,16 +2,29 @@
 
 namespace Tusk {
 	void Compiler::write(uint8_t byte) {
-		m_bytecode_out.write_byte(byte);
+		if (m_unit_stack.empty())
+			m_bytecode_out.write_byte(byte);
+		else
+			m_unit_stack[m_unit_stack.size() - 1]->write_byte(byte);
 	}
 
 	void Compiler::write(uint8_t byte_a, uint8_t byte_b) {
-		m_bytecode_out.write_byte(byte_a);
-		m_bytecode_out.write_byte(byte_b);
+		if (m_unit_stack.empty()) {
+			m_bytecode_out.write_byte(byte_a);
+			m_bytecode_out.write_byte(byte_b);
+		}
+		else {
+			m_unit_stack[m_unit_stack.size() - 1]->write_byte(byte_a);
+			m_unit_stack[m_unit_stack.size() - 1]->write_byte(byte_b);
+		}
+		
 	}
 
 	uint8_t Compiler::add_constant(Value value) {
-		return m_bytecode_out.write_value(value);
+		if (m_unit_stack.empty())
+			return m_bytecode_out.write_value(value);
+		else
+			return m_unit_stack[m_unit_stack.size() - 1]->write_value(value);
 	}
 
 	void Compiler::expression(const std::shared_ptr<Expression>& expression) {
@@ -160,6 +173,9 @@ namespace Tusk {
 		case NodeType::CONTINUE_STATEMENT:
 			continue_statement(std::static_pointer_cast<ContinueStatement>(statement));
 			break;
+		case NodeType::FUNCTION_DECLARATION:
+			function_declaration(std::static_pointer_cast<FunctionDeclaration>(statement));
+			break;
 		case NodeType::VOID_STATEMENT:
 			break;
 		}
@@ -266,5 +282,18 @@ namespace Tusk {
 			return;
 		}
 		write((uint8_t)Instruction::JUMP, m_loop_stack[m_loop_stack.size() - 1].condition_index);
+	}
+
+	void Compiler::function_declaration(const std::shared_ptr<FunctionDeclaration>& function_decl) {
+		std::shared_ptr<Function> func = std::make_shared<Function>();
+		func->function_name = function_decl->function_name;
+		func->code_unit = std::make_shared<Unit>();
+		push_unit(func->code_unit.get());
+		statement(function_decl->body);
+		pop_unit();
+		func->arg_count = function_decl->arguments.size();
+		write((uint8_t)Instruction::VAL_INDEX, add_constant(Value(func)));
+		write((uint8_t)Instruction::MAKE_GLOBAL, add_constant(Value(std::make_shared<String>(function_decl->function_name))));
+		m_globals.push_back(function_decl->function_name);
 	}
 }
