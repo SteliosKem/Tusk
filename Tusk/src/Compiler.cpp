@@ -50,6 +50,9 @@ namespace Tusk {
 		case NodeType::STRING:
 			write((uint8_t)Instruction::VAL_INDEX, add_constant(std::static_pointer_cast<StringLiteral>(expression)->value));
 			break;
+		case NodeType::CALL:
+			call(std::static_pointer_cast<Call>(expression));
+			break;
 		}
 	}
 
@@ -295,5 +298,10 @@ namespace Tusk {
 		write((uint8_t)Instruction::VAL_INDEX, add_constant(Value(func)));
 		write((uint8_t)Instruction::MAKE_GLOBAL, add_constant(Value(std::make_shared<String>(function_decl->function_name))));
 		m_globals.push_back(function_decl->function_name);
+	}
+
+	void Compiler::call(const std::shared_ptr<Call>& call) {
+		name(call->name);
+		write((uint8_t)Instruction::CALL);
 	}
 }

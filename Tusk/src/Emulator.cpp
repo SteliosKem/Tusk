@@ -14,11 +14,11 @@ namespace Tusk {
 	}
 
 	inline uint8_t Emulator::next_byte() {
-		return (*m_bytes)[m_instruction_index++];			// Return byte at index and advance it
+		return (*bytes())[instruction_index()++];			// Return byte at index and advance it
 	}
 
 	inline const Value& Emulator::read_value() {
-		return (*m_bytes).get_values()[next_byte()];		// Get the constant index and pass it to the constant pool to return the value
+		return (*bytes()).get_values()[next_byte()];		// Get the constant index and pass it to the constant pool to return the value
 	}
 
 	void Emulator::push_stack(const Value& val) {			// Push value to the stack
@@ -91,9 +91,10 @@ namespace Tusk {
 	}
 
 	Result Emulator::run(const Unit* unit) {
-		m_bytes = unit;
+		push_data({unit});
 		Result res = run();
-		m_instruction_index = 0;
+		//m_instruction_index = 0;
+		pop_data();
 		m_stack.clear();
 		return res;
 	}
@@ -197,11 +198,11 @@ namespace Tusk {
 			case Instruction::JUMP_IF_FALSE: {
 				int64_t val = read_value().get<int64_t>();
 				if (!is_true(pop_stack()))
-					m_instruction_index = val;
+					instruction_index() = val;
 				break;
 			}
 			case Instruction::JUMP: {
-				m_instruction_index = read_value().get<int64_t>();
+				instruction_index() = read_value().get<int64_t>();
 				break;
 			}
 			case Instruction::SET_LOCAL: {
@@ -214,8 +215,26 @@ namespace Tusk {
 				push_stack(m_stack[val]);
 				break;
 			}
+			case Instruction::CALL: {
+				call();
+				break;
+			}
 			}
 
 		}
+	}
+
+	Result Emulator::call() {
+		Value val = pop_stack();
+		if (!(val.is<std::shared_ptr<ValueObject>>() && val.get<std::shared_ptr<ValueObject>>()->get_type() == ObjectType::FUNCTION)) {
+			m_error_handler.report_error("Cannot call non-function objects", {}, ErrorType::RUNTIME_ERROR);
+			return Result::RUNTIME_ERROR;
+		}
+		std::shared_ptr<Function> func = val.get_object<Function>();
+		push_data({ func->code_unit.get(), 0});
+		Result res = run();
+		pop_data();
+		push_stack(Value(nullptr));
+		return res;
 	}
 }

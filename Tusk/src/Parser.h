@@ -21,6 +21,7 @@ namespace Tusk {
 		NAME,
 		VOID,
 		STRING,
+		CALL,
 
 		//STATEMENTS
 		COMPOUNT_STATEMENT,
@@ -113,6 +114,14 @@ namespace Tusk {
 		Void() = default;
 		NodeType get_type() const override { return NodeType::VOID; }
 		std::string to_string() const override { return "void"; }
+	};
+
+	struct Call : Expression {
+		std::shared_ptr<Name> name;
+
+		Call(const std::shared_ptr<Name>& val) : name{ val } {}
+		NodeType get_type() const override { return NodeType::CALL; }
+		std::string to_string() const override { return "Call " + name->string; }
 	};
 
 	// STATEMENTS

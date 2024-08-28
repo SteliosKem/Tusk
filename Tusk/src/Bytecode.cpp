@@ -98,6 +98,10 @@ namespace Tusk {
 				i++;
 				out += std::to_string(i) + " " + instruction_str("SET_LOCAL");
 				break;
+			case Instruction::CALL:
+				i++;
+				out += std::to_string(i) + " " + instruction_str("CALL");
+				break;
 			default:
 				break;
 			}

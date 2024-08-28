@@ -133,8 +133,15 @@ namespace Tusk {
 			return to_ret;
 		}
 		case TokenType::ID: {
-			to_ret = std::make_shared<Name>(current_token().value);
+			const std::string& str = current_token().value;
+			to_ret = std::make_shared<Name>(str);
+			
 			advance();
+			if (current_token().type == TokenType::L_PAR) {
+				advance();
+				consume(TokenType::R_PAR, "Expected ')'");
+				to_ret = std::make_shared<Call>(std::static_pointer_cast<Name>(to_ret));
+			}
 			return to_ret;
 		}
 		case TokenType::VOID: {

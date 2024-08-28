@@ -31,6 +31,7 @@ namespace Tusk {
 		JUMP_IF_FALSE,
 		SET_LOCAL,
 		GET_LOCAL,
+		CALL,
 	};
 
 	struct Unit {

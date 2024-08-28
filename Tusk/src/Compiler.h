@@ -54,6 +54,7 @@ namespace Tusk {
 		void number(const std::shared_ptr<Number>& number);
 		void boolean(const std::shared_ptr<BoolValue>& boolean);
 		void name(const std::shared_ptr<Name>& name);
+		void call(const std::shared_ptr<Call>& call);
 
 		// Statements
 		void statement(const std::shared_ptr<Statement>& statement);
