@@ -292,7 +292,16 @@ namespace Tusk {
 		func->function_name = function_decl->function_name;
 		func->code_unit = std::make_shared<Unit>();
 		push_unit(func->code_unit.get());
+		m_current_scope++;
+		for (const auto& arg : function_decl->arguments) {
+			m_locals.push_back(LocalName{ arg->name, (uint8_t)(m_locals.size() - 1), m_current_scope });
+		}
+		
+		m_current_scope--;
 		statement(function_decl->body);
+		//for (const auto& parameter : function_decl->arguments)
+		//	write((uint8_t)Instruction::POP);
+		write((uint8_t)Instruction::RETURN);
 		pop_unit();
 		func->arg_count = function_decl->arguments.size();
 		write((uint8_t)Instruction::VAL_INDEX, add_constant(Value(func)));
@@ -302,6 +311,8 @@ namespace Tusk {
 
 	void Compiler::call(const std::shared_ptr<Call>& call) {
 		name(call->name);
-		write((uint8_t)Instruction::CALL);
+		for (const auto& param : call->parameters)
+			expression(param);
+		write((uint8_t)Instruction::CALL, (uint8_t)call->parameters.size());
 	}
 }

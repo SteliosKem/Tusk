@@ -118,10 +118,17 @@ namespace Tusk {
 
 	struct Call : Expression {
 		std::shared_ptr<Name> name;
+		std::vector<std::shared_ptr<Expression>> parameters;
 
-		Call(const std::shared_ptr<Name>& val) : name{ val } {}
+		Call(const std::shared_ptr<Name>& val, const std::vector<std::shared_ptr<Expression>>& vec) : name{ val }, parameters { vec } {}
 		NodeType get_type() const override { return NodeType::CALL; }
-		std::string to_string() const override { return "Call " + name->string; }
+		std::string to_string() const override {
+			std::string str{ "(" };
+			if(!parameters.empty())
+				for (const auto& param : parameters)
+					str += param->to_string() + ", ";
+			return "Call " + name->string + str + ")";
+		}
 	};
 
 	// STATEMENTS

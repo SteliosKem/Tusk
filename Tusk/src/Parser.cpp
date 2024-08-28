@@ -1,5 +1,6 @@
 #include "Parser.h"
 #include <iostream>
+#include <vector>
 
 namespace Tusk {
 	const std::shared_ptr<AST>& Parser::parse() {
@@ -135,13 +136,22 @@ namespace Tusk {
 		case TokenType::ID: {
 			const std::string& str = current_token().value;
 			to_ret = std::make_shared<Name>(str);
-			
+			std::vector<std::shared_ptr<Expression>> expr{ };
 			advance();
+			const Token* tok = &current_token();
 			if (current_token().type == TokenType::L_PAR) {
 				advance();
+				while (current_token().type != TokenType::R_PAR && current_token().type != TokenType::_EOF) {
+					tok = &current_token();
+					expr.push_back(expression());
+
+					if (current_token().type == TokenType::COMMA)
+						advance();
+				}
 				consume(TokenType::R_PAR, "Expected ')'");
-				to_ret = std::make_shared<Call>(std::static_pointer_cast<Name>(to_ret));
+				to_ret = std::make_shared<Call>(std::static_pointer_cast<Name>(to_ret), expr);
 			}
+			
 			return to_ret;
 		}
 		case TokenType::VOID: {

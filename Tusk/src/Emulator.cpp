@@ -124,6 +124,9 @@ namespace Tusk {
 				break;
 			case Instruction::RETURN:
 				//std::cout << pop_stack();
+				if (m_call_stack.size() != 1) {
+					m_return_value_register = nullptr;
+				}
 				return Result::OK;
 			case Instruction::LOG:
 				std::cout << stack_top();
@@ -207,16 +210,20 @@ namespace Tusk {
 			}
 			case Instruction::SET_LOCAL: {
 				int64_t val = read_value().get<int64_t>();
-				m_stack[val] = stack_top();
+				m_stack[val + m_call_stack[m_call_stack.size() - 1].stack_size_before_args] = stack_top();
 				break;
 			}
 			case Instruction::GET_LOCAL: {
 				int64_t val = read_value().get<int64_t>();
-				push_stack(m_stack[val]);
+				push_stack(m_stack[val + m_call_stack[m_call_stack.size() - 1].stack_size_before_args]);
 				break;
 			}
 			case Instruction::CALL: {
-				call();
+				uint8_t arg_count = next_byte();
+				Result res = call(stack_top(arg_count), arg_count);
+				if (res != Result::OK)
+					return res;
+				//push_stack(m_return_value_register);
 				break;
 			}
 			}
@@ -224,15 +231,16 @@ namespace Tusk {
 		}
 	}
 
-	Result Emulator::call() {
-		Value val = pop_stack();
-		if (!(val.is<std::shared_ptr<ValueObject>>() && val.get<std::shared_ptr<ValueObject>>()->get_type() == ObjectType::FUNCTION)) {
+	Result Emulator::call(const Value& value_to_call, uint8_t arg_count) {
+		if (!(value_to_call.is<std::shared_ptr<ValueObject>>() && value_to_call.get<std::shared_ptr<ValueObject>>()->get_type() == ObjectType::FUNCTION)) {
 			m_error_handler.report_error("Cannot call non-function objects", {}, ErrorType::RUNTIME_ERROR);
 			return Result::RUNTIME_ERROR;
 		}
-		std::shared_ptr<Function> func = val.get_object<Function>();
+		std::shared_ptr<Function> func = value_to_call.get_object<Function>();
 		push_data({ func->code_unit.get(), 0});
+		m_call_stack.push_back(CallInfo{ func->function_name, m_stack.size() - arg_count });
 		Result res = run();
+		m_call_stack.pop_back();
 		pop_data();
 		push_stack(Value(nullptr));
 		return res;

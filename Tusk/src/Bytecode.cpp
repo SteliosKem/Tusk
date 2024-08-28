@@ -9,12 +9,17 @@ namespace Tusk {
 		return name + " {" + std::to_string((int)index) + "}\n";
 	}
 
-	std::string Unit::disassemble() const {
+	std::string Unit::disassemble(const Unit& unit) const {
 		std::string out = "";
 		int i = 0;
 		uint8_t instruction;
-		while (i < m_bytecode.size()) {
-			instruction = m_bytecode[i];
+		for (const Value& val : unit.m_values) {
+			if (val.is<std::shared_ptr<ValueObject>>() && val.get<std::shared_ptr<ValueObject>>()->get_type() == ObjectType::FUNCTION) {
+				out += "FUNCTION " + val.get_object<Function>()->function_name + "\n" + disassemble(*val.get_object<Function>()->code_unit.get()) + "\n\n";
+			}
+		}
+		while (i < unit.m_bytecode.size()) {
+			instruction = unit.m_bytecode[i];
 			switch ((Instruction)instruction) {
 			case Instruction::ADD:
 				out += std::to_string(i) + " " + instruction_str("ADD");
@@ -29,7 +34,7 @@ namespace Tusk {
 				out += std::to_string(i) + " " + instruction_str("DIVIDE");
 				break;
 			case Instruction::VAL_INDEX:
-				out += std::to_string(i) + " " + complex_str("INDEX", m_bytecode[++i]);
+				out += std::to_string(i) + " " + complex_str("INDEX", unit.m_bytecode[++i]);
 				break;
 			case Instruction::POP:
 				out += std::to_string(i) + " " + instruction_str("POP");
@@ -84,11 +89,11 @@ namespace Tusk {
 				break;
 			case Instruction::JUMP_IF_FALSE:
 				i++;
-				out += std::to_string(i) + " " + complex_str("JUMP_IF_FALSE", m_values[m_bytecode[i]].get<int64_t>());
+				out += std::to_string(i) + " " + complex_str("JUMP_IF_FALSE", m_values[unit.m_bytecode[i]].get<int64_t>());
 				break;
 			case Instruction::JUMP:
 				i++;
-				out += std::to_string(i) + " " + complex_str("JUMP", m_values[m_bytecode[i]].get<int64_t>());
+				out += std::to_string(i) + " " + complex_str("JUMP", m_values[unit.m_bytecode[i]].get<int64_t>());
 				break;
 			case Instruction::GET_LOCAL:
 				i++;
@@ -110,5 +115,7 @@ namespace Tusk {
 
 		return out;
 	}
-
+	std::string Unit::disassemble() const {
+		return disassemble(*this);
+	}
 }

@@ -22,15 +22,23 @@ namespace Tusk {
 
 	class Emulator {
 	public:
-		Emulator(ErrorHandler& handler) : m_error_handler(handler) {  }
-		Emulator(const Unit* bytes, ErrorHandler& handler) : m_error_handler{ handler } {  }
+		Emulator(ErrorHandler& handler) : m_error_handler(handler) { m_call_stack.push_back({}); }
+		Emulator(const Unit* bytes, ErrorHandler& handler) : m_error_handler{ handler } { m_call_stack.push_back({}); }
 
 		
 		Result run(const Unit* bytes);
 	private:
 		Result run();
 
+		struct CallInfo {
+			std::string function_name{"script"};
+			uint64_t stack_size_before_args{ 0 };
+		};
+
 		std::vector<Value> m_stack;
+		std::vector<CallInfo> m_call_stack;
+
+		Value m_return_value_register;
 		//const Unit* m_bytes{ nullptr };
 		//uint32_t* m_instruction_index{ 0 };
 		const Unit* bytes() { return m_program_data[m_program_data.size() - 1].bytes; }
@@ -67,6 +75,6 @@ namespace Tusk {
 		//
 		Result binary_operation(TokenType operation);
 		bool equality();
-		Result call();
+		Result call(const Value& value_to_call, uint8_t arg_count);
 	};
 }
