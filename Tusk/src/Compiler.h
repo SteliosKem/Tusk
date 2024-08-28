@@ -17,6 +17,7 @@ namespace Tusk {
 		Unit m_bytecode_out;
 		ErrorHandler& m_error_handler;
 		std::vector<Unit*> m_unit_stack;
+		std::vector<nullptr_t> m_func_stack;
 
 		// UTILS
 		void write(uint8_t byte);						// Writes one byte to the bytecode
@@ -68,5 +69,6 @@ namespace Tusk {
 		void break_statement(const std::shared_ptr<BreakStatement>& break_stmt);
 		void continue_statement(const std::shared_ptr<ContinueStatement>& continue_stmt);
 		void function_declaration(const std::shared_ptr<FunctionDeclaration>& function_decl);
+		void return_statement(const std::shared_ptr<ReturnStatement>& return_stmt);
 	};
 }

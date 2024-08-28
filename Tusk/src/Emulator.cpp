@@ -125,7 +125,7 @@ namespace Tusk {
 			case Instruction::RETURN:
 				//std::cout << pop_stack();
 				if (m_call_stack.size() != 1) {
-					m_return_value_register = nullptr;
+					m_return_value_register = pop_stack();
 				}
 				return Result::OK;
 			case Instruction::LOG:
@@ -223,7 +223,6 @@ namespace Tusk {
 				Result res = call(stack_top(arg_count), arg_count);
 				if (res != Result::OK)
 					return res;
-				//push_stack(m_return_value_register);
 				break;
 			}
 			}
@@ -242,7 +241,7 @@ namespace Tusk {
 		Result res = run();
 		m_call_stack.pop_back();
 		pop_data();
-		push_stack(Value(nullptr));
+		push_stack(m_return_value_register);
 		return res;
 	}
 }

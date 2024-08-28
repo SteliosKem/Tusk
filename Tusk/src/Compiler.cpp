@@ -179,6 +179,9 @@ namespace Tusk {
 		case NodeType::FUNCTION_DECLARATION:
 			function_declaration(std::static_pointer_cast<FunctionDeclaration>(statement));
 			break;
+		case NodeType::RETURN_STATEMENT:
+			return_statement(std::static_pointer_cast<ReturnStatement>(statement));
+			break;
 		case NodeType::VOID_STATEMENT:
 			break;
 		}
@@ -291,6 +294,7 @@ namespace Tusk {
 		std::shared_ptr<Function> func = std::make_shared<Function>();
 		func->function_name = function_decl->function_name;
 		func->code_unit = std::make_shared<Unit>();
+		m_func_stack.push_back(nullptr);
 		push_unit(func->code_unit.get());
 		m_current_scope++;
 		for (const auto& arg : function_decl->arguments) {
@@ -301,12 +305,25 @@ namespace Tusk {
 		statement(function_decl->body);
 		//for (const auto& parameter : function_decl->arguments)
 		//	write((uint8_t)Instruction::POP);
-		write((uint8_t)Instruction::RETURN);
+		write((uint8_t)Instruction::VOID, (uint8_t)Instruction::RETURN);
 		pop_unit();
+		m_func_stack.pop_back();
 		func->arg_count = function_decl->arguments.size();
 		write((uint8_t)Instruction::VAL_INDEX, add_constant(Value(func)));
 		write((uint8_t)Instruction::MAKE_GLOBAL, add_constant(Value(std::make_shared<String>(function_decl->function_name))));
 		m_globals.push_back(function_decl->function_name);
+	}
+
+	void Compiler::return_statement(const std::shared_ptr<ReturnStatement>& return_stmt) {
+		if (m_func_stack.empty()) {
+			m_error_handler.report_error("Cannot use return outside a function", {}, ErrorType::COMPILE_ERROR);
+			return;
+		}
+		if(return_stmt->expr)
+			expression(return_stmt->expr);
+		else
+			write((uint8_t)Instruction::VOID);
+		write((uint8_t)Instruction::RETURN);
 	}
 
 	void Compiler::call(const std::shared_ptr<Call>& call) {

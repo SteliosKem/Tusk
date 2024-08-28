@@ -191,6 +191,9 @@ namespace Tusk {
 				stmt = std::make_shared<ContinueStatement>();
 				advance();
 			}
+			else if (tok.value == "return") {
+				stmt = return_statement();
+			}
 			else if (tok.value == "if") {
 				stmt = if_statement();
 				expect_semicolon = false;
@@ -329,5 +332,12 @@ namespace Tusk {
 		std::shared_ptr<Statement> stmt = statement();
 
 		return std::make_shared<FunctionDeclaration>(name, args, stmt);
+	}
+
+	std::shared_ptr<Statement> Parser::return_statement() {
+		advance();
+		if(current_token().type != TokenType::SEMICOLON)
+			return std::make_shared<ReturnStatement>(expression());
+		return std::make_shared<ReturnStatement>(nullptr);
 	}
 }

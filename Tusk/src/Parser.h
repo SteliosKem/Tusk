@@ -35,6 +35,7 @@ namespace Tusk {
 		BREAK_STATEMENT,
 		CONTINUE_STATEMENT,
 		FUNCTION_DECLARATION,
+		RETURN_STATEMENT,
 	};
 
 	struct ASTNode {
@@ -237,6 +238,14 @@ namespace Tusk {
 			return "Function declaration '" + function_name + "' (" + args + ") " + body->to_string(); }
 	};
 
+	struct ReturnStatement : public Statement {
+		std::shared_ptr<Expression> expr;
+
+		ReturnStatement(const std::shared_ptr<Expression>& expr) : expr{ expr } {}
+		NodeType get_type() const override { return NodeType::RETURN_STATEMENT; }
+		std::string to_string() const override { return "Return\n" + expr->to_string(); }
+	};
+
 	// TREE
 	struct AST : ASTNode {
 		std::vector<std::shared_ptr<Statement>> statements;
@@ -286,5 +295,6 @@ namespace Tusk {
 		std::shared_ptr<Statement> if_statement();
 		std::shared_ptr<Statement> while_statement();
 		std::shared_ptr<Statement> function();
+		std::shared_ptr<Statement> return_statement();
 	};
 }
