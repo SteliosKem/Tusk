@@ -111,6 +111,10 @@ namespace Tusk {
 				i++;
 				out += std::to_string(i) + " " + instruction_str("GET_MEMBER");
 				break;
+			case Instruction::SET_MEMBER:
+				i++;
+				out += std::to_string(i) + " " + instruction_str("SET_MEMBER");
+				break;
 			default:
 				break;
 			}

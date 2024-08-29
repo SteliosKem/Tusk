@@ -94,27 +94,33 @@ namespace Tusk {
 	}
 
 	void Compiler::lvalue(const std::shared_ptr<LValue>& l_value) {
-		static std::vector<nullptr_t> access_stack;
-		if(access_stack.empty())
+		if (m_access_stack.empty()) {
 			if (l_value->name->get_type() == NodeType::NAME)
 				name(std::static_pointer_cast<Name>(l_value->name));
 			else
 				call(std::static_pointer_cast<Call>(l_value->name));
+		}
 		else {
 			if (l_value->name->get_type() == NodeType::NAME)
 				write(add_constant(Value(std::static_pointer_cast<Name>(l_value->name)->string)));
 			else {
 				std::shared_ptr<Call> call = std::static_pointer_cast<Call>(l_value->name);
+				write(add_constant(Value(call->name->string)));
 				for (const auto& param : call->parameters)
 					expression(param);
 				write((uint8_t)Instruction::CALL, (uint8_t)call->parameters.size());
+				
 			}
+			
 		}
 		if (l_value->access) {
-			access_stack.push_back(nullptr);
-			write((uint8_t)Instruction::GET_MEMBER);
+			m_access_stack.push_back(nullptr);
+			if (m_set_member && !l_value->access->access)
+				write((uint8_t)Instruction::SET_MEMBER);
+			else
+				write((uint8_t)Instruction::GET_MEMBER);
 			lvalue(l_value->access);
-			access_stack.pop_back();
+			m_access_stack.pop_back();
 		}
 	}
 
@@ -252,12 +258,20 @@ namespace Tusk {
 	void Compiler::assignment(const std::shared_ptr<Assignment>& assignment) {
 		expression(assignment->expression);
 		int64_t local_idx = -1;
-		if (std::find(m_globals.begin(), m_globals.end(), assignment->name) != m_globals.end())
-			write((uint8_t)Instruction::SET_GLOBAL, add_constant(Value(std::make_shared<StringObject>(assignment->name))));
-		else if ((local_idx = find_local(assignment->name)) != -1)
-			write((uint8_t)Instruction::SET_LOCAL, add_constant(Value(local_idx)));
-		else
-			m_error_handler.report_error("Name '" + assignment->name + "' does not exist in this scope", {}, ErrorType::COMPILE_ERROR);
+		if (!assignment->lvalue->access && assignment->lvalue->name->get_type() == NodeType::NAME) {
+			std::shared_ptr<Name> name = std::static_pointer_cast<Name>(assignment->lvalue->name);
+			if (std::find(m_globals.begin(), m_globals.end(), name->string) != m_globals.end())
+				write((uint8_t)Instruction::SET_GLOBAL, add_constant(Value(std::make_shared<StringObject>(name->string))));
+			else if ((local_idx = find_local(name->string)) != -1)
+				write((uint8_t)Instruction::SET_LOCAL, add_constant(Value(local_idx)));
+			else
+				m_error_handler.report_error("Name '" + name->string + "' does not exist in this scope", {}, ErrorType::COMPILE_ERROR);
+		}
+		else {
+			m_set_member = true;
+			lvalue(assignment->lvalue);
+			m_set_member = false;
+		}
 	}
 
 	void Compiler::if_statement(const std::shared_ptr<IfStatement>& stmt) {

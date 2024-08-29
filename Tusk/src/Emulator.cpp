@@ -241,6 +241,22 @@ namespace Tusk {
 					push_stack(instance->public_members[name]);
 				break;
 			}
+			case Instruction::SET_MEMBER: {
+				Value val = pop_stack();
+				if (!(val.is<std::shared_ptr<ValueObject>>() && val.get_object_type() == ObjectType::INSTANCE)) {
+					m_error_handler.report_error("Cannot access members of a non-instance", {}, ErrorType::RUNTIME_ERROR);
+					return Result::RUNTIME_ERROR;
+				}
+				std::shared_ptr<InstanceObject> instance = val.get_object<InstanceObject>();
+				const std::string& name = read_value().get_object<StringObject>()->string;
+				//if (instance->public_members.find(name) == instance->public_members.end()) {
+				//	m_error_handler.report_error("Instance of class " + instance->class_ref.class_name + " does not have member " + name, {}, ErrorType::RUNTIME_ERROR);
+				//	return Result::RUNTIME_ERROR;
+				//}
+				//else
+				instance->public_members[name] = pop_stack();
+				break;
+			}
 			}
 
 		}

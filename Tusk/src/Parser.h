@@ -188,12 +188,12 @@ namespace Tusk {
 	};
 
 	struct Assignment : public Statement {
-		std::string name{ "" };
+		std::shared_ptr<LValue> lvalue;
 		std::shared_ptr<Expression> expression;
 
-		Assignment(const std::string& name, const std::shared_ptr<Expression>& expr) : name{ name }, expression{ expr } {}
+		Assignment(const std::shared_ptr<LValue>& lvalue, const std::shared_ptr<Expression>& expr) : lvalue{ lvalue }, expression{ expr } {}
 		NodeType get_type() const override { return NodeType::ASSIGNMENT; }
-		std::string to_string() const override { return "Assignment " + expression->to_string() + " to: " + name; }
+		std::string to_string() const override { return "Assignment " + expression->to_string() + " to: " + lvalue->to_string(); }
 	};
 
 	struct IfStatement : public Statement {

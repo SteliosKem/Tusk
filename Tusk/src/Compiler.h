@@ -30,6 +30,9 @@ namespace Tusk {
 			m_unit_stack.pop_back();
 		}
 
+		bool m_set_member = false;
+		std::vector<nullptr_t> m_access_stack;
+
 		void make_name(const std::string& name);
 
 		struct LocalName {

@@ -242,7 +242,7 @@ namespace Tusk {
 				return nullptr;
 			}
 		}
-		else if ((m_current_index + 1 < m_tokens.size()) && tok.type == TokenType::ID && peek().type == TokenType::EQUAL)
+		else if (tok.type == TokenType::ID)
 			stmt = assignment();
 		else if (current_token().type == TokenType::SEMICOLON) {
 			advance();
@@ -284,10 +284,21 @@ namespace Tusk {
 	}
 
 	std::shared_ptr<Statement> Parser::assignment() {
-		const std::string& name = current_token().value;
-		advance();
-		advance();
-		return std::make_shared<Assignment>(name, expression());
+		//const std::string& name = current_token().value;
+		//advance();
+		//advance();
+		//return std::make_shared<Assignment>(name, expression());
+		int current_index = m_current_index;
+		std::shared_ptr<LValue> lval = identifier();
+
+		if (current_token().type == TokenType::EQUAL) {
+			advance();
+			return std::make_shared<Assignment>(lval, expression());
+		}
+		else {
+			m_current_index = current_index;
+			return expression_statement();
+		}
 	}
 
 	std::shared_ptr<Statement> Parser::if_statement() {
