@@ -392,8 +392,35 @@ namespace Tusk {
 		if (current_token().type != TokenType::L_BRACE) {
 			m_error_handler.report_error("Expected '{'", {current_token().line}, ErrorType::COMPILE_ERROR);
 		}
-		std::shared_ptr<Statement> stmt = compount_statement();
+		advance();
+		std::vector<std::shared_ptr<Statement>> statements;
+		while (current_token().type != TokenType::R_BRACE && current_token().type != TokenType::_EOF)
+			statements.push_back(class_body());
 
-		return std::make_shared<ClassDeclaration>(name, stmt);
+		if (current_token().type == TokenType::_EOF) {
+			m_error_handler.report_error("Expected '}'", { current_token().line }, ErrorType::COMPILE_ERROR);
+			return nullptr;
+		}
+		else
+			advance();
+
+		return std::make_shared<ClassDeclaration>(name, std::make_shared<CompountStatement>(statements));
+	}
+
+	std::shared_ptr<Statement> Parser::class_body() {
+		std::shared_ptr<Statement> stmt{nullptr};
+		if (current_token().type == TokenType::KEYWORD) {
+			if (current_token().value == "fn")
+				stmt = function();
+			else if (current_token().value == "let") {
+				stmt = variable_declaration();
+				consume(TokenType::SEMICOLON, "Expected ';'");
+			}
+			else
+				m_error_handler.report_error("Expected function or variable declaration", {current_token().line}, ErrorType::COMPILE_ERROR);
+		}
+		else
+			m_error_handler.report_error("Expected function or variable declaration", { current_token().line }, ErrorType::COMPILE_ERROR);
+		return stmt;
 	}
 }

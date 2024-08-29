@@ -232,12 +232,15 @@ namespace Tusk {
 		write((uint8_t)Instruction::POP);
 	}
 
-	void Compiler::variable_declaration(const std::shared_ptr<VariableDeclaration>& variable_decl) {
+	void Compiler::variable_declaration(const std::shared_ptr<VariableDeclaration>& variable_decl, bool make_member) {
 		if (variable_decl->value)
 			expression(variable_decl->value);
 		else
 			write((uint8_t)Instruction::VOID);
-		make_name(variable_decl->variable_name);
+		if (make_member)
+			write((uint8_t)Instruction::MAKE_MEMBER, add_constant(Value(variable_decl->variable_name)));
+		else
+			make_name(variable_decl->variable_name);
 	}
 
 	void Compiler::make_name(const std::string& name) {
@@ -334,7 +337,7 @@ namespace Tusk {
 		write((uint8_t)Instruction::JUMP, m_loop_stack[m_loop_stack.size() - 1].condition_index);
 	}
 
-	void Compiler::function_declaration(const std::shared_ptr<FunctionDeclaration>& function_decl) {
+	void Compiler::function_declaration(const std::shared_ptr<FunctionDeclaration>& function_decl, bool make_member) {
 		std::shared_ptr<FunctionObject> func = std::make_shared<FunctionObject>();
 		func->function_name = function_decl->function_name;
 		func->code_unit = std::make_shared<Unit>();
@@ -352,7 +355,10 @@ namespace Tusk {
 		m_func_stack.pop_back();
 		func->arg_count = function_decl->arguments.size();
 		write((uint8_t)Instruction::VAL_INDEX, add_constant(Value(func)));
-		make_name(function_decl->function_name);
+		if (make_member)
+			write((uint8_t)Instruction::MAKE_MEMBER, add_constant(Value(func->function_name)));
+		else
+			make_name(function_decl->function_name);
 	}
 
 	void Compiler::return_statement(const std::shared_ptr<ReturnStatement>& return_stmt) {
@@ -379,6 +385,18 @@ namespace Tusk {
 		class_obj->class_name = class_decl->class_name;
 
 		write((uint8_t)Instruction::VAL_INDEX, add_constant(Value(class_obj)));
+		for (const auto& stmt : class_decl->body->statements) {
+			switch (stmt->get_type()) {
+			case NodeType::FUNCTION_DECLARATION:
+				function_declaration(std::static_pointer_cast<FunctionDeclaration>(stmt), true);
+				break;
+			case NodeType::VARIABLE_DECLARATION:
+				variable_declaration(std::static_pointer_cast<VariableDeclaration>(stmt), true);
+				break;
+			}
+		}
 		make_name(class_decl->class_name);
+
+		
 	}
 }

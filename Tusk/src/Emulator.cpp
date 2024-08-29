@@ -257,6 +257,15 @@ namespace Tusk {
 				instance->public_members[name] = pop_stack();
 				break;
 			}
+			case Instruction::MAKE_MEMBER: {
+				std::shared_ptr<StringObject> val = read_value().get_object<StringObject>();
+				if (m_global_table.find(val->string) != m_global_table.end()) {
+					m_error_handler.report_error("Global name '" + val->string + "' already exists", {}, ErrorType::RUNTIME_ERROR);
+					return Result::RUNTIME_ERROR;
+				}
+				stack_top().get_object<ClassObject>()->public_members[val->string] = pop_stack();
+				break;
+			}
 			}
 
 		}
@@ -286,6 +295,8 @@ namespace Tusk {
 				//return res;
 				pop_stack();
 				std::shared_ptr<InstanceObject> instance = std::make_shared<InstanceObject>(*class_obj.get());
+				instance->private_members = class_obj->private_members;
+				instance->public_members = class_obj->public_members;
 				push_stack(Value(instance));
 				return Result::OK;
 			}

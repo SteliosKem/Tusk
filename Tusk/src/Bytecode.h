@@ -34,6 +34,7 @@ namespace Tusk {
 		CALL,
 		GET_MEMBER,
 		SET_MEMBER,
+		MAKE_MEMBER,
 	};
 
 	struct Unit {
