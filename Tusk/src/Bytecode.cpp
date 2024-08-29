@@ -15,7 +15,7 @@ namespace Tusk {
 		uint8_t instruction;
 		for (const Value& val : unit.m_values) {
 			if (val.is<std::shared_ptr<ValueObject>>() && val.get<std::shared_ptr<ValueObject>>()->get_type() == ObjectType::FUNCTION) {
-				out += "FUNCTION " + val.get_object<Function>()->function_name + "\n" + disassemble(*val.get_object<Function>()->code_unit.get()) + "\n\n";
+				out += "FUNCTION " + val.get_object<FunctionObject>()->function_name + "\n" + disassemble(*val.get_object<FunctionObject>()->code_unit.get()) + "\n\n";
 			}
 		}
 		while (i < unit.m_bytecode.size()) {

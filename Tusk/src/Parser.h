@@ -36,6 +36,7 @@ namespace Tusk {
 		CONTINUE_STATEMENT,
 		FUNCTION_DECLARATION,
 		RETURN_STATEMENT,
+		CLASS_DECLARATION,
 	};
 
 	struct ASTNode {
@@ -238,6 +239,18 @@ namespace Tusk {
 			return "Function declaration '" + function_name + "' (" + args + ") " + body->to_string(); }
 	};
 
+	struct ClassDeclaration : public Statement {
+		std::string class_name{ "" };
+		std::shared_ptr<Statement> body;
+
+		ClassDeclaration(const std::string& name, const std::shared_ptr<Statement>& body)
+			: class_name{ name }, body{ body } {}
+		NodeType get_type() const override { return NodeType::CLASS_DECLARATION; }
+		std::string to_string() const override {
+			return "Class declaration '" + class_name + "' " + body->to_string();
+		}
+	};
+
 	struct ReturnStatement : public Statement {
 		std::shared_ptr<Expression> expr;
 
@@ -296,5 +309,6 @@ namespace Tusk {
 		std::shared_ptr<Statement> while_statement();
 		std::shared_ptr<Statement> function();
 		std::shared_ptr<Statement> return_statement();
+		std::shared_ptr<Statement> class_declaration();
 	};
 }

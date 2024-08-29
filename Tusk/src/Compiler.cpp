@@ -82,7 +82,7 @@ namespace Tusk {
 	void Compiler::name(const std::shared_ptr<Name>& name) {
 		int64_t local_idx = -1;
 		if(std::find(m_globals.begin(), m_globals.end(), name->string) != m_globals.end())
-			write((uint8_t)Instruction::GET_GLOBAL, add_constant(Value(std::make_shared<String>(name->string))));
+			write((uint8_t)Instruction::GET_GLOBAL, add_constant(Value(std::make_shared<StringObject>(name->string))));
 		else if ((local_idx = find_local(name->string)) != -1)
 			write((uint8_t)Instruction::GET_LOCAL, add_constant(Value(local_idx)));
 		else {
@@ -182,6 +182,9 @@ namespace Tusk {
 		case NodeType::RETURN_STATEMENT:
 			return_statement(std::static_pointer_cast<ReturnStatement>(statement));
 			break;
+		case NodeType::CLASS_DECLARATION:
+			class_declaration(std::static_pointer_cast<ClassDeclaration>(statement));
+			break;
 		case NodeType::VOID_STATEMENT:
 			break;
 		}
@@ -196,26 +199,25 @@ namespace Tusk {
 	}
 
 	void Compiler::variable_declaration(const std::shared_ptr<VariableDeclaration>& variable_decl) {
+		if (variable_decl->value)
+			expression(variable_decl->value);
+		else
+			write((uint8_t)Instruction::VOID);
+		make_name(variable_decl->variable_name);
+	}
+
+	void Compiler::make_name(const std::string& name) {
 		if (m_current_scope == -1) {
-			if (std::find(m_globals.begin(), m_globals.end(), variable_decl->variable_name) != m_globals.end()) {
-				m_error_handler.report_error("Global name '" + variable_decl->variable_name + "' already exists", {}, ErrorType::COMPILE_ERROR);
+			if (std::find(m_globals.begin(), m_globals.end(), name) != m_globals.end()) {
+				m_error_handler.report_error("Global name '" + name + "' already exists", {}, ErrorType::COMPILE_ERROR);
 			}
 
-
-			if (variable_decl->value)
-				expression(variable_decl->value);
-			else
-				write((uint8_t)Instruction::VOID);
-			write((uint8_t)Instruction::MAKE_GLOBAL, add_constant(Value(std::make_shared<String>(variable_decl->variable_name))));
-			m_globals.push_back(variable_decl->variable_name);
+			write((uint8_t)Instruction::MAKE_GLOBAL, add_constant(Value(std::make_shared<StringObject>(name))));
+			m_globals.push_back(name);
 		}
 		else {
-			if (variable_decl->value)
-				expression(variable_decl->value);
-			else
-				write((uint8_t)Instruction::VOID);
-			m_locals.push_back(LocalName{variable_decl->variable_name, (uint8_t)(m_locals.size() - 1), m_current_scope});
-			write((uint8_t)Instruction::SET_LOCAL, add_constant((int64_t)(m_locals.size() - 1)));
+			m_locals.push_back(LocalName{ name, (uint8_t)(m_locals.size() - 1), m_current_scope });
+			//write((uint8_t)Instruction::SET_LOCAL, add_constant((int64_t)(m_locals.size() - 1)));
 		}
 	}
 
@@ -223,7 +225,7 @@ namespace Tusk {
 		expression(assignment->expression);
 		int64_t local_idx = -1;
 		if (std::find(m_globals.begin(), m_globals.end(), assignment->name) != m_globals.end())
-			write((uint8_t)Instruction::SET_GLOBAL, add_constant(Value(std::make_shared<String>(assignment->name))));
+			write((uint8_t)Instruction::SET_GLOBAL, add_constant(Value(std::make_shared<StringObject>(assignment->name))));
 		else if ((local_idx = find_local(assignment->name)) != -1)
 			write((uint8_t)Instruction::SET_LOCAL, add_constant(Value(local_idx)));
 		else
@@ -291,7 +293,7 @@ namespace Tusk {
 	}
 
 	void Compiler::function_declaration(const std::shared_ptr<FunctionDeclaration>& function_decl) {
-		std::shared_ptr<Function> func = std::make_shared<Function>();
+		std::shared_ptr<FunctionObject> func = std::make_shared<FunctionObject>();
 		func->function_name = function_decl->function_name;
 		func->code_unit = std::make_shared<Unit>();
 		m_func_stack.push_back(nullptr);
@@ -303,15 +305,12 @@ namespace Tusk {
 		
 		m_current_scope--;
 		statement(function_decl->body);
-		//for (const auto& parameter : function_decl->arguments)
-		//	write((uint8_t)Instruction::POP);
 		write((uint8_t)Instruction::VOID, (uint8_t)Instruction::RETURN);
 		pop_unit();
 		m_func_stack.pop_back();
 		func->arg_count = function_decl->arguments.size();
 		write((uint8_t)Instruction::VAL_INDEX, add_constant(Value(func)));
-		write((uint8_t)Instruction::MAKE_GLOBAL, add_constant(Value(std::make_shared<String>(function_decl->function_name))));
-		m_globals.push_back(function_decl->function_name);
+		make_name(function_decl->function_name);
 	}
 
 	void Compiler::return_statement(const std::shared_ptr<ReturnStatement>& return_stmt) {
@@ -331,5 +330,13 @@ namespace Tusk {
 		for (const auto& param : call->parameters)
 			expression(param);
 		write((uint8_t)Instruction::CALL, (uint8_t)call->parameters.size());
+	}
+
+	void Compiler::class_declaration(const std::shared_ptr<ClassDeclaration>& class_decl) {
+		std::shared_ptr<ClassObject> class_obj = std::make_shared<ClassObject>();
+		class_obj->class_name = class_decl->class_name;
+
+		write((uint8_t)Instruction::VAL_INDEX, add_constant(Value(class_obj)));
+		make_name(class_decl->class_name);
 	}
 }

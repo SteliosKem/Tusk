@@ -177,10 +177,10 @@ namespace Tusk {
 				break;
 			}
 			case Instruction::VOID:
-				push_stack(Value(std::make_shared<VoidValue>()));
+				push_stack(Value(std::make_shared<VoidObject>()));
 				break;
 			case Instruction::MAKE_GLOBAL: {
-				std::shared_ptr<String> val = read_value().get_object<String>();
+				std::shared_ptr<StringObject> val = read_value().get_object<StringObject>();
 				if (m_global_table.find(val->string) != m_global_table.end()) {
 					m_error_handler.report_error("Global name '" + val->string + "' already exists", {}, ErrorType::RUNTIME_ERROR);
 					return Result::RUNTIME_ERROR;
@@ -189,12 +189,12 @@ namespace Tusk {
 				break;
 			}
 			case Instruction::GET_GLOBAL: {
-				std::shared_ptr<String> val = read_value().get_object<String>();
+				std::shared_ptr<StringObject> val = read_value().get_object<StringObject>();
 				push_stack(m_global_table[val->string]);
 				break;
 			}
 			case Instruction::SET_GLOBAL: {
-				std::shared_ptr<String> val = read_value().get_object<String>();
+				std::shared_ptr<StringObject> val = read_value().get_object<StringObject>();
 				m_global_table[val->string] = pop_stack();
 				break;
 			}
@@ -235,7 +235,7 @@ namespace Tusk {
 			m_error_handler.report_error("Cannot call non-function objects", {}, ErrorType::RUNTIME_ERROR);
 			return Result::RUNTIME_ERROR;
 		}
-		std::shared_ptr<Function> func = value_to_call.get_object<Function>();
+		std::shared_ptr<FunctionObject> func = value_to_call.get_object<FunctionObject>();
 		push_data({ func->code_unit.get(), 0});
 		m_call_stack.push_back(CallInfo{ func->function_name, m_stack.size() - arg_count });
 		Result res = run();

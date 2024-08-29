@@ -10,6 +10,7 @@ namespace Tusk {
 		STRING,
 		FUNCTION,
 		CLASS,
+		INSTANCE,
 		ENUM,
 		VOID
 	};
@@ -18,24 +19,38 @@ namespace Tusk {
 		virtual ObjectType get_type() const { return ObjectType::OBJECT; }
 	};
 
-	struct VoidValue : public ValueObject {
+	struct VoidObject : public ValueObject {
 		ObjectType get_type() const override { return ObjectType::VOID; }
 	};
 
-	struct String : public ValueObject {
+	struct StringObject : public ValueObject {
 		std::string string;
 
-		String(const std::string& str = "") : string{ str } {}
+		StringObject(const std::string& str = "") : string{ str } {}
 		ObjectType get_type() const override { return ObjectType::STRING; }
 	};
 
-	struct Function : public ValueObject {
+	struct FunctionObject : public ValueObject {
 		std::string function_name{ "" };
 		uint32_t arg_count{ 0 };
 		std::shared_ptr<Unit> code_unit;
 
-		Function(const std::string& str = "", uint32_t arg_count = 0) : function_name{ str }, arg_count{ arg_count } {}
+		FunctionObject(const std::string& str = "", uint32_t arg_count = 0) : function_name{ str }, arg_count{ arg_count } {}
 		ObjectType get_type() const override { return ObjectType::FUNCTION; }
+	};
+
+	struct ClassObject : public ValueObject {
+		std::string class_name{ "" };
+
+		ClassObject(const std::string& str = "") : class_name{ str } {}
+		ObjectType get_type() const override { return ObjectType::CLASS; }
+	};
+
+	struct InstanceObject : public ValueObject {
+		std::string class_name{ "" };
+
+		InstanceObject(const std::string& str = "") : class_name{ str } {}
+		ObjectType get_type() const override { return ObjectType::INSTANCE; }
 	};
 
 	class Value {
@@ -44,8 +59,8 @@ namespace Tusk {
 		Value(double real) : m_value{ real } {}
 		Value(bool boolean) : m_value{ boolean } {}
 		Value(const std::shared_ptr<ValueObject>& object) : m_value{ object } {}
-		Value(const std::string& str) : m_value{ std::make_shared<String>(str) } {}
-		Value(nullptr_t) : m_value{ std::make_shared<VoidValue>() } {}
+		Value(const std::string& str) : m_value{ std::make_shared<StringObject>(str) } {}
+		Value(nullptr_t) : m_value{ std::make_shared<VoidObject>() } {}
 		Value() = default;
 
 		template<typename T>
@@ -91,13 +106,16 @@ namespace Tusk {
 			else if (value.is<std::shared_ptr<ValueObject>>()) {
 				switch (value.get_object_type()) {
 				case ObjectType::STRING:
-					os << '"' << value.get_object<String>()->string << '"';
+					os << '"' << value.get_object<StringObject>()->string << '"';
 					break;
 				case ObjectType::VOID:
 					os << "void";
 					break;
 				case ObjectType::FUNCTION:
-					os << "<function " + value.get_object<Function>()->function_name + ">";
+					os << "<function " + value.get_object<FunctionObject>()->function_name + ">";
+					break;
+				case ObjectType::CLASS:
+					os << "<class " + value.get_object<ClassObject>()->class_name + ">";
 					break;
 				}
 			}

@@ -30,6 +30,8 @@ namespace Tusk {
 			m_unit_stack.pop_back();
 		}
 
+		void make_name(const std::string& name);
+
 		struct LocalName {
 			std::string name;
 			uint8_t index;
@@ -70,5 +72,6 @@ namespace Tusk {
 		void continue_statement(const std::shared_ptr<ContinueStatement>& continue_stmt);
 		void function_declaration(const std::shared_ptr<FunctionDeclaration>& function_decl);
 		void return_statement(const std::shared_ptr<ReturnStatement>& return_stmt);
+		void class_declaration(const std::shared_ptr<ClassDeclaration>& function_decl);
 	};
 }

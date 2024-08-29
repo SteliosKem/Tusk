@@ -202,6 +202,10 @@ namespace Tusk {
 				stmt = function();
 				expect_semicolon = false;
 			}
+			else if (tok.value == "class") {
+				stmt = class_declaration();
+				expect_semicolon = false;
+			}
 			else if (tok.value == "while") {
 				stmt = while_statement();
 				expect_semicolon = false;
@@ -339,5 +343,19 @@ namespace Tusk {
 		if(current_token().type != TokenType::SEMICOLON)
 			return std::make_shared<ReturnStatement>(expression());
 		return std::make_shared<ReturnStatement>(nullptr);
+	}
+
+	std::shared_ptr<Statement> Parser::class_declaration() {
+		advance();
+		const Token& tok = current_token();
+		consume(TokenType::ID, "Expected identifier");
+
+		std::string name = tok.value;
+		if (current_token().type != TokenType::L_BRACE) {
+			m_error_handler.report_error("Expected '{'", {current_token().line}, ErrorType::COMPILE_ERROR);
+		}
+		std::shared_ptr<Statement> stmt = compount_statement();
+
+		return std::make_shared<ClassDeclaration>(name, stmt);
 	}
 }
