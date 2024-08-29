@@ -32,6 +32,7 @@ namespace Tusk {
 		SET_LOCAL,
 		GET_LOCAL,
 		CALL,
+		GET_MEMBER,
 	};
 
 	struct Unit {

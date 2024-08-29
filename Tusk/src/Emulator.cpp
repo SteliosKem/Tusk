@@ -225,23 +225,59 @@ namespace Tusk {
 					return res;
 				break;
 			}
+			case Instruction::GET_MEMBER: {
+				Value val = pop_stack();
+				if (!(val.is<std::shared_ptr<ValueObject>>() && val.get_object_type() == ObjectType::INSTANCE)) {
+					m_error_handler.report_error("Cannot access members of a non-instance", {}, ErrorType::RUNTIME_ERROR);
+					return Result::RUNTIME_ERROR;
+				}
+				std::shared_ptr<InstanceObject> instance = val.get_object<InstanceObject>();
+				const std::string& name = read_value().get_object<StringObject>()->string;
+				if (instance->public_members.find(name) == instance->public_members.end()) {
+					m_error_handler.report_error("Instance of class " + instance->class_ref.class_name + " does not have member " + name, {}, ErrorType::RUNTIME_ERROR);
+					return Result::RUNTIME_ERROR;
+				}
+				else
+					push_stack(instance->public_members[name]);
+				break;
+			}
 			}
 
 		}
 	}
 
 	Result Emulator::call(const Value& value_to_call, uint8_t arg_count) {
-		if (!(value_to_call.is<std::shared_ptr<ValueObject>>() && value_to_call.get<std::shared_ptr<ValueObject>>()->get_type() == ObjectType::FUNCTION)) {
-			m_error_handler.report_error("Cannot call non-function objects", {}, ErrorType::RUNTIME_ERROR);
-			return Result::RUNTIME_ERROR;
+		if (value_to_call.is<std::shared_ptr<ValueObject>>()) {
+			switch (value_to_call.get_object_type()) {
+			case ObjectType::FUNCTION: {
+				std::shared_ptr<FunctionObject> func = value_to_call.get_object<FunctionObject>();
+				push_data({ func->code_unit.get(), 0 });
+				m_call_stack.push_back(CallInfo{ func->function_name, m_stack.size() - arg_count });
+				Result res = run();
+				m_call_stack.pop_back();
+				pop_data();
+				push_stack(m_return_value_register);
+				return res;
+			}
+			case ObjectType::CLASS: {
+				std::shared_ptr<ClassObject> class_obj = value_to_call.get_object<ClassObject>();
+				//push_data({ func->code_unit.get(), 0 });
+				//m_call_stack.push_back(CallInfo{ func->function_name, m_stack.size() - arg_count });
+				//Result res = run();
+				//m_call_stack.pop_back();
+				//pop_data();
+				//push_stack(m_return_value_register);
+				//return res;
+				pop_stack();
+				std::shared_ptr<InstanceObject> instance = std::make_shared<InstanceObject>(*class_obj.get());
+				push_stack(Value(instance));
+				return Result::OK;
+			}
+			default:
+				break;
+			}
 		}
-		std::shared_ptr<FunctionObject> func = value_to_call.get_object<FunctionObject>();
-		push_data({ func->code_unit.get(), 0});
-		m_call_stack.push_back(CallInfo{ func->function_name, m_stack.size() - arg_count });
-		Result res = run();
-		m_call_stack.pop_back();
-		pop_data();
-		push_stack(m_return_value_register);
-		return res;
+		m_error_handler.report_error("Cannot call non-function and non-class objects", {}, ErrorType::RUNTIME_ERROR);
+		return Result::RUNTIME_ERROR;
 	}
 }

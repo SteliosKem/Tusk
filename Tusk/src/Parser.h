@@ -22,6 +22,7 @@ namespace Tusk {
 		VOID,
 		STRING,
 		CALL,
+		LVALUE,
 
 		//STATEMENTS
 		COMPOUNT_STATEMENT,
@@ -104,10 +105,12 @@ namespace Tusk {
 		std::string to_string() const override { return '"' + value + '"'; }
 	};
 
-	struct Name : public Expression {
+	struct NameOrCall : public Expression {};
+
+	struct Name : public NameOrCall {
 		std::string string;
 
-		Name(const std::string& val) : string{ val } {}
+		Name(const std::string& val = "") : string{val} {}
 		NodeType get_type() const override { return NodeType::NAME; }
 		std::string to_string() const override { return string; }
 	};
@@ -118,7 +121,18 @@ namespace Tusk {
 		std::string to_string() const override { return "void"; }
 	};
 
-	struct Call : Expression {
+	struct LValue : Expression {
+		std::shared_ptr<NameOrCall> name;
+		std::shared_ptr<LValue> access;
+
+		LValue(const std::shared_ptr<Name>& name = {}, const std::shared_ptr<LValue>& access = nullptr) : name{name}, access{access} {}
+		NodeType get_type() const override { return NodeType::LVALUE; }
+		std::string to_string() const override {
+			return "LValue " + name->to_string() + (access ? " access " + access->to_string() : "");
+		}
+	};
+
+	struct Call : NameOrCall {
 		std::shared_ptr<Name> name;
 		std::vector<std::shared_ptr<Expression>> parameters;
 
@@ -129,7 +143,7 @@ namespace Tusk {
 			if(!parameters.empty())
 				for (const auto& param : parameters)
 					str += param->to_string() + ", ";
-			return "Call " + name->string + str + ")";
+			return "Call " + name->to_string() + str + ")";
 		}
 	};
 
@@ -297,6 +311,7 @@ namespace Tusk {
 		std::shared_ptr<Expression> arithmetic();
 		std::shared_ptr<Expression> term();
 		std::shared_ptr<Expression> factor();
+		std::shared_ptr<LValue> identifier();
 
 		// STATEMENTS
 		std::shared_ptr<Statement> statement();

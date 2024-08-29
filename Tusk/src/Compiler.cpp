@@ -50,6 +50,9 @@ namespace Tusk {
 		case NodeType::STRING:
 			write((uint8_t)Instruction::VAL_INDEX, add_constant(std::static_pointer_cast<StringLiteral>(expression)->value));
 			break;
+		case NodeType::LVALUE:
+			lvalue(std::static_pointer_cast<LValue>(expression));
+			break;
 		case NodeType::CALL:
 			call(std::static_pointer_cast<Call>(expression));
 			break;
@@ -87,6 +90,31 @@ namespace Tusk {
 			write((uint8_t)Instruction::GET_LOCAL, add_constant(Value(local_idx)));
 		else {
 			m_error_handler.report_error("Name '" + name->string + "' does not exist in this scope", {}, ErrorType::COMPILE_ERROR);
+		}
+	}
+
+	void Compiler::lvalue(const std::shared_ptr<LValue>& l_value) {
+		static std::vector<nullptr_t> access_stack;
+		if(access_stack.empty())
+			if (l_value->name->get_type() == NodeType::NAME)
+				name(std::static_pointer_cast<Name>(l_value->name));
+			else
+				call(std::static_pointer_cast<Call>(l_value->name));
+		else {
+			if (l_value->name->get_type() == NodeType::NAME)
+				write(add_constant(Value(std::static_pointer_cast<Name>(l_value->name)->string)));
+			else {
+				std::shared_ptr<Call> call = std::static_pointer_cast<Call>(l_value->name);
+				for (const auto& param : call->parameters)
+					expression(param);
+				write((uint8_t)Instruction::CALL, (uint8_t)call->parameters.size());
+			}
+		}
+		if (l_value->access) {
+			access_stack.push_back(nullptr);
+			write((uint8_t)Instruction::GET_MEMBER);
+			lvalue(l_value->access);
+			access_stack.pop_back();
 		}
 	}
 

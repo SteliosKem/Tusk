@@ -2,6 +2,7 @@
 #include <variant>
 #include <memory>
 #include <iostream>
+#include <unordered_map>
 
 namespace Tusk {
 	struct Unit;
@@ -39,17 +40,22 @@ namespace Tusk {
 		ObjectType get_type() const override { return ObjectType::FUNCTION; }
 	};
 
+	class Value;
 	struct ClassObject : public ValueObject {
 		std::string class_name{ "" };
+		std::unordered_map<std::string, Value> public_members;
+		std::unordered_map<std::string, Value> private_members;
 
 		ClassObject(const std::string& str = "") : class_name{ str } {}
 		ObjectType get_type() const override { return ObjectType::CLASS; }
 	};
 
 	struct InstanceObject : public ValueObject {
-		std::string class_name{ "" };
+		ClassObject& class_ref;
+		std::unordered_map<std::string, Value> public_members;
+		std::unordered_map<std::string, Value> private_members;
 
-		InstanceObject(const std::string& str = "") : class_name{ str } {}
+		InstanceObject(ClassObject& class_ref) : class_ref{ class_ref } { }
 		ObjectType get_type() const override { return ObjectType::INSTANCE; }
 	};
 
@@ -116,6 +122,9 @@ namespace Tusk {
 					break;
 				case ObjectType::CLASS:
 					os << "<class " + value.get_object<ClassObject>()->class_name + ">";
+					break;
+				case ObjectType::INSTANCE:
+					os << "<" + value.get_object<InstanceObject>()->class_ref.class_name + " instance>";
 					break;
 				}
 			}

@@ -134,7 +134,7 @@ namespace Tusk {
 			return to_ret;
 		}
 		case TokenType::ID: {
-			const std::string& str = current_token().value;
+			/*const std::string& str = current_token().value;
 			to_ret = std::make_shared<Name>(str);
 			std::vector<std::shared_ptr<Expression>> expr{ };
 			advance();
@@ -152,7 +152,8 @@ namespace Tusk {
 				to_ret = std::make_shared<Call>(std::static_pointer_cast<Name>(to_ret), expr);
 			}
 			
-			return to_ret;
+			return to_ret;*/
+			return identifier();
 		}
 		case TokenType::VOID: {
 			to_ret = std::make_shared<Void>();
@@ -168,6 +169,32 @@ namespace Tusk {
 			m_error_handler.report_error("Expected expression", {current_token().line}, ErrorType::COMPILE_ERROR);
 		}
 		return nullptr;
+	}
+
+	std::shared_ptr<LValue> Parser::identifier() {
+		std::shared_ptr<LValue> left = std::make_shared<LValue>();
+		left->name = std::make_shared<Name>(current_token().value);
+		const std::string& name = current_token().value;
+		advance();
+		if (current_token().type == TokenType::L_PAR) {
+			std::vector<std::shared_ptr<Expression>> expr{ };
+			advance();
+			const Token* tok = &current_token();
+			while (current_token().type != TokenType::R_PAR && current_token().type != TokenType::_EOF) {
+				tok = &current_token();
+				expr.push_back(expression());
+
+				if (current_token().type == TokenType::COMMA)
+					advance();
+			}
+			consume(TokenType::R_PAR, "Expected ')'");
+			left->name = std::make_shared<Call>(std::make_shared<Name>(name), expr);
+		}
+		if (current_token().type == TokenType::DOT) {
+			advance();
+			left->access = identifier();
+		}
+		return left;
 	}
 
 	std::shared_ptr<Statement> Parser::statement() {
