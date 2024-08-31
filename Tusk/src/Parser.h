@@ -266,9 +266,10 @@ namespace Tusk {
 	struct ClassDeclaration : public Statement {
 		std::string class_name{ "" };
 		std::shared_ptr<CompountStatement> body;
+		std::string parent_class{ "" };
 
-		ClassDeclaration(const std::string& name, const std::shared_ptr<CompountStatement>& body)
-			: class_name{ name }, body{ body } {}
+		ClassDeclaration(const std::string& name, const std::shared_ptr<CompountStatement>& body, const std::string& parent_class = "")
+			: class_name{ name }, body{ body }, parent_class{ parent_class } {}
 		NodeType get_type() const override { return NodeType::CLASS_DECLARATION; }
 		std::string to_string() const override {
 			return "Class declaration '" + class_name + "' " + body->to_string();

@@ -119,6 +119,10 @@ namespace Tusk {
 				i++;
 				out += std::to_string(i) + " " + instruction_str("METHOD_CALL");
 				break;
+			case Instruction::INHERIT:
+				i++;
+				out += std::to_string(i) + " " + instruction_str("INHERIT");
+				break;
 			default:
 				break;
 			}

@@ -397,9 +397,15 @@ namespace Tusk {
 	std::shared_ptr<Statement> Parser::class_declaration() {
 		advance();
 		const Token& tok = current_token();
+		std::string parent{ "" };
 		consume(TokenType::ID, "Expected identifier");
+		if (current_token().type == TokenType::ARROW) {
+			advance();
+			parent = current_token().value;
+			consume(TokenType::ID, "Expected parent class name");
+		}
 
-		std::string name = tok.value;
+		const std::string& name = tok.value;
 		if (current_token().type != TokenType::L_BRACE) {
 			m_error_handler.report_error("Expected '{'", {current_token().line}, ErrorType::COMPILE_ERROR);
 			return nullptr;
@@ -416,7 +422,7 @@ namespace Tusk {
 		else
 			advance();
 
-		return std::make_shared<ClassDeclaration>(name, std::make_shared<CompountStatement>(statements));
+		return std::make_shared<ClassDeclaration>(name, std::make_shared<CompountStatement>(statements), parent);
 	}
 
 	std::shared_ptr<Statement> Parser::class_body() {

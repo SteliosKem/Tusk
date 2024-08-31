@@ -431,6 +431,10 @@ namespace Tusk {
 		m_in_class_decl = true;
 
 		write((uint8_t)Instruction::VAL_INDEX, add_constant(Value(class_obj)));
+		if (class_decl->parent_class != "") {
+			name(std::make_shared<Name>(class_decl->parent_class));
+			write((uint8_t)Instruction::INHERIT);
+		}
 		for (const auto& stmt : class_decl->body->statements) {
 			switch (stmt->get_type()) {
 			case NodeType::FUNCTION_DECLARATION:
@@ -441,7 +445,10 @@ namespace Tusk {
 				break;
 			}
 		}
+		//name();
+		
 		make_name(class_decl->class_name);
+		
 
 		m_in_class_decl = false;
 	}

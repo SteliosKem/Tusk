@@ -288,6 +288,18 @@ namespace Tusk {
 					return res;
 				break;
 			}
+			case Instruction::INHERIT: {
+				Value val = pop_stack();
+				if (!(val.is<std::shared_ptr<ValueObject>>() && val.get_object_type() == ObjectType::CLASS)) {
+					m_error_handler.report_error("Cannot inherit from non-class objects", {}, ErrorType::RUNTIME_ERROR);
+					return Result::RUNTIME_ERROR;
+				}
+				std::shared_ptr<ClassObject> _class = stack_top().get_object<ClassObject>();
+				for (const auto& [key, value] : val.get_object<ClassObject>()->public_members) {
+					_class->public_members[key] = value;
+				}
+			}
+
 			}
 
 		}
