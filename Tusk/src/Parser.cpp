@@ -153,7 +153,7 @@ namespace Tusk {
 			}
 			
 			return to_ret;*/
-			return identifier();
+			return std::make_shared<LValueStartNode>(identifier());
 		}
 		case TokenType::VOID: {
 			to_ret = std::make_shared<Void>();
@@ -289,7 +289,7 @@ namespace Tusk {
 		//advance();
 		//return std::make_shared<Assignment>(name, expression());
 		int current_index = m_current_index;
-		std::shared_ptr<LValue> lval = identifier();
+		std::shared_ptr<LValueStartNode> lval = std::make_shared<LValueStartNode>(identifier());
 
 		if (current_token().type == TokenType::EQUAL) {
 			advance();

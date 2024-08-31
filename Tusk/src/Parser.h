@@ -23,6 +23,7 @@ namespace Tusk {
 		STRING,
 		CALL,
 		LVALUE,
+		LVALUE_START,
 
 		//STATEMENTS
 		COMPOUNT_STATEMENT,
@@ -132,6 +133,15 @@ namespace Tusk {
 		}
 	};
 
+	struct LValueStartNode : public Expression {
+		std::shared_ptr<LValue> lvalue;
+		LValueStartNode(const std::shared_ptr<LValue>& lvalue = {}) : lvalue{ lvalue } {}
+		NodeType get_type() const override { return NodeType::LVALUE_START; }
+		std::string to_string() const override {
+			return "LValue Start " + lvalue->to_string();
+		}
+	};
+
 	struct Call : NameOrCall {
 		std::shared_ptr<Name> name;
 		std::vector<std::shared_ptr<Expression>> parameters;
@@ -188,10 +198,10 @@ namespace Tusk {
 	};
 
 	struct Assignment : public Statement {
-		std::shared_ptr<LValue> lvalue;
+		std::shared_ptr<LValueStartNode> lvalue;
 		std::shared_ptr<Expression> expression;
 
-		Assignment(const std::shared_ptr<LValue>& lvalue, const std::shared_ptr<Expression>& expr) : lvalue{ lvalue }, expression{ expr } {}
+		Assignment(const std::shared_ptr<LValueStartNode>& lvalue, const std::shared_ptr<Expression>& expr) : lvalue{ lvalue }, expression{ expr } {}
 		NodeType get_type() const override { return NodeType::ASSIGNMENT; }
 		std::string to_string() const override { return "Assignment " + expression->to_string() + " to: " + lvalue->to_string(); }
 	};

@@ -61,7 +61,8 @@ namespace Tusk {
 		void boolean(const std::shared_ptr<BoolValue>& boolean);
 		void name(const std::shared_ptr<Name>& name);
 		void call(const std::shared_ptr<Call>& call);
-		void lvalue(const std::shared_ptr<LValue>& call);
+		void lvalue_start(const std::shared_ptr<LValueStartNode>& lvalue_start);
+		void lvalue(const std::shared_ptr<LValue>& l_value);
 
 		// Statements
 		void statement(const std::shared_ptr<Statement>& statement);

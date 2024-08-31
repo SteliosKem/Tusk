@@ -53,6 +53,9 @@ namespace Tusk {
 		case NodeType::LVALUE:
 			lvalue(std::static_pointer_cast<LValue>(expression));
 			break;
+		case NodeType::LVALUE_START:
+			lvalue_start(std::static_pointer_cast<LValueStartNode>(expression));
+			break;
 		case NodeType::CALL:
 			call(std::static_pointer_cast<Call>(expression));
 			break;
@@ -94,33 +97,36 @@ namespace Tusk {
 	}
 
 	void Compiler::lvalue(const std::shared_ptr<LValue>& l_value) {
-		if (m_access_stack.empty()) {
-			if (l_value->name->get_type() == NodeType::NAME)
-				name(std::static_pointer_cast<Name>(l_value->name));
-			else
-				call(std::static_pointer_cast<Call>(l_value->name));
-		}
+		if (l_value->name->get_type() == NodeType::NAME)
+			write(add_constant(Value(std::static_pointer_cast<Name>(l_value->name)->string)));
 		else {
-			if (l_value->name->get_type() == NodeType::NAME)
-				write(add_constant(Value(std::static_pointer_cast<Name>(l_value->name)->string)));
-			else {
-				std::shared_ptr<Call> call = std::static_pointer_cast<Call>(l_value->name);
-				write(add_constant(Value(call->name->string)));
-				for (const auto& param : call->parameters)
-					expression(param);
-				write((uint8_t)Instruction::CALL, (uint8_t)call->parameters.size());
-				
-			}
-			
+			std::shared_ptr<Call> call = std::static_pointer_cast<Call>(l_value->name);
+			write(add_constant(Value(call->name->string)));
+			for (const auto& param : call->parameters)
+				expression(param);
+			write((uint8_t)Instruction::CALL, (uint8_t)call->parameters.size());
 		}
 		if (l_value->access) {
-			m_access_stack.push_back(nullptr);
 			if (m_set_member && !l_value->access->access)
 				write((uint8_t)Instruction::SET_MEMBER);
 			else
 				write((uint8_t)Instruction::GET_MEMBER);
 			lvalue(l_value->access);
-			m_access_stack.pop_back();
+		}
+	}
+	void Compiler::lvalue_start(const std::shared_ptr<LValueStartNode>& l_value) {
+		std::shared_ptr<LValue> lval = l_value->lvalue;
+		if (lval->name->get_type() == NodeType::NAME)
+			name(std::static_pointer_cast<Name>(lval->name));
+		else
+			call(std::static_pointer_cast<Call>(lval->name));
+
+		if (lval->access) {
+			if (m_set_member && !lval->access->access)
+				write((uint8_t)Instruction::SET_MEMBER);
+			else
+				write((uint8_t)Instruction::GET_MEMBER);
+			lvalue(lval->access);
 		}
 	}
 
@@ -259,10 +265,11 @@ namespace Tusk {
 	}
 
 	void Compiler::assignment(const std::shared_ptr<Assignment>& assignment) {
+		std::shared_ptr<LValue> lval = assignment->lvalue->lvalue;
 		expression(assignment->expression);
 		int64_t local_idx = -1;
-		if (!assignment->lvalue->access && assignment->lvalue->name->get_type() == NodeType::NAME) {
-			std::shared_ptr<Name> name = std::static_pointer_cast<Name>(assignment->lvalue->name);
+		if (!lval->access && lval->name->get_type() == NodeType::NAME) {
+			std::shared_ptr<Name> name = std::static_pointer_cast<Name>(lval->name);
 			if (std::find(m_globals.begin(), m_globals.end(), name->string) != m_globals.end())
 				write((uint8_t)Instruction::SET_GLOBAL, add_constant(Value(std::make_shared<StringObject>(name->string))));
 			else if ((local_idx = find_local(name->string)) != -1)
@@ -272,7 +279,7 @@ namespace Tusk {
 		}
 		else {
 			m_set_member = true;
-			lvalue(assignment->lvalue);
+			lvalue_start(assignment->lvalue);
 			m_set_member = false;
 		}
 	}
