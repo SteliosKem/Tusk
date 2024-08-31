@@ -15,7 +15,7 @@ namespace Tusk {
 
 	void Parser::consume(TokenType type, const std::string& error) {
 		if (current_token().type != type) {
-			m_error_handler.report_error(error, {current_token().line}, ErrorType::COMPILE_ERROR);
+			report_error(error);
 		}
 		else
 			advance();
@@ -172,7 +172,7 @@ namespace Tusk {
 				return std::make_shared<LValueStartNode>(identifier());
 			// INTENTIONAL FALLTHROUGH
 		default:
-			m_error_handler.report_error("Expected expression", {current_token().line}, ErrorType::COMPILE_ERROR);
+			report_error("Expected expression");
 		}
 		return nullptr;
 	}
@@ -204,6 +204,8 @@ namespace Tusk {
 	}
 
 	std::shared_ptr<Statement> Parser::statement() {
+		if (m_panic_mode)
+			synchronize();
 		bool expect_semicolon = true;
 		std::shared_ptr<Statement> stmt{ nullptr };
 		const Token& tok = current_token();
@@ -246,7 +248,7 @@ namespace Tusk {
 			else if (tok.value == "this")
 				stmt = assignment();
 			else {
-				m_error_handler.report_error("Unexpected '" + tok.value + "'", {tok.line}, ErrorType::COMPILE_ERROR);
+				report_error("Unexpected '" + tok.value + "'");
 				return nullptr;
 			}
 		}
@@ -276,7 +278,7 @@ namespace Tusk {
 	std::shared_ptr<Statement> Parser::variable_declaration(bool allow_set_value) {
 		advance();
 		if (current_token().type != TokenType::ID) {
-			m_error_handler.report_error("Expected identifier", { current_token().line }, ErrorType::COMPILE_ERROR);
+			report_error("Expected identifier");
 			return nullptr;
 		}
 		std::shared_ptr<VariableDeclaration> declaration = std::make_shared<VariableDeclaration>();
@@ -284,7 +286,7 @@ namespace Tusk {
 		declaration->variable_name = current_token().value;
 		advance();
 		if (!allow_set_value && current_token().type == TokenType::EQUAL) {
-			m_error_handler.report_error("Setting values of class variables is not allowed", { current_token().line }, ErrorType::COMPILE_ERROR);
+			report_error("Setting values of class variables is not allowed");
 			return declaration;
 		}
 		if (current_token().type != TokenType::SEMICOLON) {
@@ -342,7 +344,7 @@ namespace Tusk {
 			statements.push_back(statement());
 
 		if (current_token().type == TokenType::_EOF) {
-			m_error_handler.report_error("Expected '}'", { current_token().line }, ErrorType::COMPILE_ERROR);
+			report_error("Expected '}'");
 			return nullptr;
 		}
 		else
@@ -408,7 +410,7 @@ namespace Tusk {
 
 		const std::string& name = tok.value;
 		if (current_token().type != TokenType::L_BRACE) {
-			m_error_handler.report_error("Expected '{'", {current_token().line}, ErrorType::COMPILE_ERROR);
+			report_error("Expected '{'");
 			return nullptr;
 		}
 		advance();
@@ -417,7 +419,7 @@ namespace Tusk {
 			statements.push_back(class_body());
 
 		if (current_token().type == TokenType::_EOF) {
-			m_error_handler.report_error("Expected '}'", { current_token().line }, ErrorType::COMPILE_ERROR);
+			report_error("Expected '}'");
 			return nullptr;
 		}
 		else
@@ -436,10 +438,10 @@ namespace Tusk {
 				consume(TokenType::SEMICOLON, "Expected ';'");
 			}
 			else
-				m_error_handler.report_error("Expected function or variable declaration", {current_token().line}, ErrorType::COMPILE_ERROR);
+				report_error("Expected function or variable declaration");
 		}
 		else
-			m_error_handler.report_error("Expected function or variable declaration", { current_token().line }, ErrorType::COMPILE_ERROR);
+			report_error("Expected function or variable declaration");
 		return stmt;
 	}
 }

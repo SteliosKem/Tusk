@@ -308,11 +308,31 @@ namespace Tusk {
 
 		std::shared_ptr<AST> m_final_tree{ nullptr };
 
+		bool m_panic_mode = false;
+
 		// UTIL
 		void advance() { if(m_current_index < m_tokens.size() - 1) m_current_index++; }
 		const Token& current_token() const { return m_tokens[m_current_index]; }
 		const Token& peek(uint32_t depth = 1) const { return m_tokens[m_current_index + depth]; }
 		void consume(TokenType type, const std::string& error);
+		void report_error(const std::string& error_msg) {
+			m_error_handler.report_error(error_msg, { current_token().line }, ErrorType::COMPILE_ERROR);
+		}
+		void synchronize() {
+			m_panic_mode = false;
+
+			while (current_token().type != TokenType::_EOF) {
+				const Token& tok = current_token();
+				if (tok.type == TokenType::SEMICOLON) {
+					advance();
+					return;
+				}
+				if (tok.value == "if" || tok.value == "class" || tok.value == "let"
+					|| tok.value == "while" || tok.value == "log" || tok.value == "return")
+					return;
+				advance();
+			}
+		}
 
 		// EXPRESSIONS
 		std::shared_ptr<Expression> expression();
