@@ -100,11 +100,12 @@ namespace Tusk {
 		if (l_value->name->get_type() == NodeType::NAME)
 			write(add_constant(Value(std::static_pointer_cast<Name>(l_value->name)->string)));
 		else {
-			std::shared_ptr<Call> call = std::static_pointer_cast<Call>(l_value->name);
+			/*std::shared_ptr<Call> call = std::static_pointer_cast<Call>(l_value->name);
 			write(add_constant(Value(call->name->string)));
 			for (const auto& param : call->parameters)
 				expression(param);
-			write((uint8_t)Instruction::CALL, (uint8_t)call->parameters.size());
+			write((uint8_t)Instruction::CALL, (uint8_t)call->parameters.size());*/
+			call(std::static_pointer_cast<Call>(l_value->name), true);
 		}
 		if (l_value->access) {
 			if (m_set_member && !l_value->access->access)
@@ -141,7 +142,8 @@ namespace Tusk {
 			if (m_set_member && !lval->access->access)
 				write((uint8_t)Instruction::SET_MEMBER);
 			else
-				write((uint8_t)Instruction::GET_MEMBER);
+				if(lval->access->name->get_type() != NodeType::CALL)
+					write((uint8_t)Instruction::GET_MEMBER);
 			lvalue(lval->access);
 		}
 	}
@@ -340,7 +342,8 @@ namespace Tusk {
 		for (int64_t i = m_locals.size() - 1; m_locals.size() > 0; m_locals.pop_back(), i--) {
 			if (m_locals[i].scope_depth <= m_current_scope)
 				break;
-			write((uint8_t)Instruction::POP);
+			if(m_locals[i].name != "this")
+				write((uint8_t)Instruction::POP);
 		}
 		
 	}
@@ -361,12 +364,15 @@ namespace Tusk {
 	}
 
 	void Compiler::function_declaration(const std::shared_ptr<FunctionDeclaration>& function_decl, bool make_member) {
+		if (make_member && function_decl->function_name == "make")
+			m_in_constructor = true;
 		std::shared_ptr<FunctionObject> func = std::make_shared<FunctionObject>();
 		func->function_name = function_decl->function_name;
 		func->code_unit = std::make_shared<Unit>();
 		m_func_stack.push_back(nullptr);
 		push_unit(func->code_unit.get());
 		m_current_scope++;
+		m_locals.push_back(LocalName{ "this", (uint8_t)(m_locals.size() - 1), m_current_scope});
 		for (const auto& arg : function_decl->arguments) {
 			m_locals.push_back(LocalName{ arg->name, (uint8_t)(m_locals.size() - 1), m_current_scope });
 		}
@@ -382,6 +388,9 @@ namespace Tusk {
 			write((uint8_t)Instruction::MAKE_MEMBER, add_constant(Value(func->function_name)));
 		else
 			make_name(function_decl->function_name);
+
+		if (make_member && function_decl->function_name == "make")
+			m_in_constructor = false;
 	}
 
 	void Compiler::return_statement(const std::shared_ptr<ReturnStatement>& return_stmt) {
@@ -389,18 +398,30 @@ namespace Tusk {
 			m_error_handler.report_error("Cannot use return outside a function", {}, ErrorType::COMPILE_ERROR);
 			return;
 		}
-		if(return_stmt->expr)
+		if (return_stmt->expr) {
+			if (m_in_constructor)
+				m_error_handler.report_error("Cannot return a value from a constructor", {}, ErrorType::COMPILE_ERROR);
 			expression(return_stmt->expr);
+		}
 		else
 			write((uint8_t)Instruction::VOID);
 		write((uint8_t)Instruction::RETURN);
 	}
 
-	void Compiler::call(const std::shared_ptr<Call>& call) {
-		name(call->name);
-		for (const auto& param : call->parameters)
-			expression(param);
-		write((uint8_t)Instruction::CALL, (uint8_t)call->parameters.size());
+	void Compiler::call(const std::shared_ptr<Call>& call, bool invoke_method) {
+		if (!invoke_method) {
+			name(call->name);
+			for (const auto& param : call->parameters)
+				expression(param);
+
+			write((uint8_t)Instruction::CALL, (uint8_t)call->parameters.size());
+		}
+		else {
+			for (const auto& param : call->parameters)
+				expression(param);
+			write((uint8_t)Instruction::METHOD_CALL, (uint8_t)call->parameters.size());
+			write((uint8_t)add_constant(Value(std::make_shared<StringObject>(call->name->string))));
+		}
 	}
 
 	void Compiler::class_declaration(const std::shared_ptr<ClassDeclaration>& class_decl) {

@@ -32,6 +32,7 @@ namespace Tusk {
 
 		bool m_set_member = false;
 
+		bool m_in_constructor = false;
 		bool m_in_class_decl = false;
 
 		void make_name(const std::string& name);
@@ -61,7 +62,7 @@ namespace Tusk {
 		void number(const std::shared_ptr<Number>& number);
 		void boolean(const std::shared_ptr<BoolValue>& boolean);
 		void name(const std::shared_ptr<Name>& name);
-		void call(const std::shared_ptr<Call>& call);
+		void call(const std::shared_ptr<Call>& call, bool invoke_method = false);
 		void lvalue_start(const std::shared_ptr<LValueStartNode>& lvalue_start);
 		void lvalue(const std::shared_ptr<LValue>& l_value);
 

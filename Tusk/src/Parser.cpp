@@ -242,6 +242,8 @@ namespace Tusk {
 				stmt = while_statement();
 				expect_semicolon = false;
 			}
+			else if (tok.value == "this")
+				stmt = assignment();
 			else {
 				m_error_handler.report_error("Unexpected '" + tok.value + "'", {tok.line}, ErrorType::COMPILE_ERROR);
 				return nullptr;

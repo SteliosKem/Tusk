@@ -76,5 +76,6 @@ namespace Tusk {
 		Result binary_operation(TokenType operation);
 		bool equality();
 		Result call(const Value& value_to_call, uint8_t arg_count);
+		Result call_method(const std::string& name, uint8_t arg_count);
 	};
 }
