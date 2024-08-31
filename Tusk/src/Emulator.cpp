@@ -303,22 +303,12 @@ namespace Tusk {
 				Result res = run();
 				m_call_stack.pop_back();
 				pop_data();
-				//for (uint32_t i = 0; i < func->arg_count; i++) {
-				//	pop_stack();
-				//}
+
 				push_stack(m_return_value_register);
 				return res;
 			}
 			case ObjectType::CLASS: {
 				std::shared_ptr<ClassObject> class_obj = value_to_call.get_object<ClassObject>();
-				//push_data({ func->code_unit.get(), 0 });
-				//m_call_stack.push_back(CallInfo{ func->function_name, m_stack.size() - arg_count });
-				//Result res = run();
-				//m_call_stack.pop_back();
-				//pop_data();
-				//push_stack(m_return_value_register);
-				//return res;
-				//pop_stack();
 				std::shared_ptr<InstanceObject> instance = std::make_shared<InstanceObject>(*class_obj.get());
 				instance->private_members = class_obj->private_members;
 				instance->public_members = class_obj->public_members;
