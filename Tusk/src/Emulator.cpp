@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "Emulator.h"
 #include "Bytecode.h"
 #include <iostream>
