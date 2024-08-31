@@ -116,8 +116,24 @@ namespace Tusk {
 	}
 	void Compiler::lvalue_start(const std::shared_ptr<LValueStartNode>& l_value) {
 		std::shared_ptr<LValue> lval = l_value->lvalue;
-		if (lval->name->get_type() == NodeType::NAME)
+		if (!m_in_class_decl) {
+			switch (lval->name->get_type()) {
+			case NodeType::NAME:
+				if (std::static_pointer_cast<Name>(lval->name)->string == "this") {
+					m_error_handler.report_error("Cannot use this outside of a class", {}, ErrorType::COMPILE_ERROR);
+					return;
+				}
+				break;
+			case NodeType::CALL:
+				if (std::static_pointer_cast<Call>(lval->name)->name->string == "this") {
+					m_error_handler.report_error("Cannot use this outside of a class", {}, ErrorType::COMPILE_ERROR);
+					return;
+				}
+			}
+		}
+		if (lval->name->get_type() == NodeType::NAME) {
 			name(std::static_pointer_cast<Name>(lval->name));
+		}
 		else
 			call(std::static_pointer_cast<Call>(lval->name));
 
@@ -391,6 +407,8 @@ namespace Tusk {
 		std::shared_ptr<ClassObject> class_obj = std::make_shared<ClassObject>();
 		class_obj->class_name = class_decl->class_name;
 
+		m_in_class_decl = true;
+
 		write((uint8_t)Instruction::VAL_INDEX, add_constant(Value(class_obj)));
 		for (const auto& stmt : class_decl->body->statements) {
 			switch (stmt->get_type()) {
@@ -404,6 +422,6 @@ namespace Tusk {
 		}
 		make_name(class_decl->class_name);
 
-		
+		m_in_class_decl = false;
 	}
 }

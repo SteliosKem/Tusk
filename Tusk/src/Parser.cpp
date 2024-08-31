@@ -155,6 +155,7 @@ namespace Tusk {
 			return to_ret;*/
 			return std::make_shared<LValueStartNode>(identifier());
 		}
+						  
 		case TokenType::VOID: {
 			to_ret = std::make_shared<Void>();
 			advance();
@@ -165,6 +166,10 @@ namespace Tusk {
 			advance();
 			return to_ret;
 		}
+		case TokenType::KEYWORD:
+			if (current_token().value == "this")
+				return std::make_shared<LValueStartNode>(identifier());
+			// INTENTIONAL FALLTHROUGH
 		default:
 			m_error_handler.report_error("Expected expression", {current_token().line}, ErrorType::COMPILE_ERROR);
 		}
@@ -265,7 +270,7 @@ namespace Tusk {
 		return std::make_shared<ExpressionStatement>(expression());
 	}
 
-	std::shared_ptr<Statement> Parser::variable_declaration() {
+	std::shared_ptr<Statement> Parser::variable_declaration(bool allow_set_value) {
 		advance();
 		if (current_token().type != TokenType::ID) {
 			m_error_handler.report_error("Expected identifier", { current_token().line }, ErrorType::COMPILE_ERROR);
@@ -275,6 +280,10 @@ namespace Tusk {
 
 		declaration->variable_name = current_token().value;
 		advance();
+		if (!allow_set_value && current_token().type == TokenType::EQUAL) {
+			m_error_handler.report_error("Setting values of class variables is not allowed", { current_token().line }, ErrorType::COMPILE_ERROR);
+			return declaration;
+		}
 		if (current_token().type != TokenType::SEMICOLON) {
 			consume(TokenType::EQUAL, "Expected '='");
 			declaration->value = expression();
@@ -391,6 +400,7 @@ namespace Tusk {
 		std::string name = tok.value;
 		if (current_token().type != TokenType::L_BRACE) {
 			m_error_handler.report_error("Expected '{'", {current_token().line}, ErrorType::COMPILE_ERROR);
+			return nullptr;
 		}
 		advance();
 		std::vector<std::shared_ptr<Statement>> statements;
@@ -413,7 +423,7 @@ namespace Tusk {
 			if (current_token().value == "fn")
 				stmt = function();
 			else if (current_token().value == "let") {
-				stmt = variable_declaration();
+				stmt = variable_declaration(false);
 				consume(TokenType::SEMICOLON, "Expected ';'");
 			}
 			else

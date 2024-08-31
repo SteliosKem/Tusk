@@ -293,12 +293,18 @@ namespace Tusk {
 				//pop_data();
 				//push_stack(m_return_value_register);
 				//return res;
-				pop_stack();
+				//pop_stack();
 				std::shared_ptr<InstanceObject> instance = std::make_shared<InstanceObject>(*class_obj.get());
 				instance->private_members = class_obj->private_members;
 				instance->public_members = class_obj->public_members;
+				Result res = Result::OK;
+				if (instance->public_members.find("make") != instance->public_members.end()) {
+					res = call(instance->public_members["make"], arg_count);
+					pop_stack();
+				}
+				pop_stack();
 				push_stack(Value(instance));
-				return Result::OK;
+				return res;
 			}
 			default:
 				break;

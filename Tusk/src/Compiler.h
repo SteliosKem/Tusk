@@ -31,7 +31,8 @@ namespace Tusk {
 		}
 
 		bool m_set_member = false;
-		std::vector<nullptr_t> m_access_stack;
+
+		bool m_in_class_decl = false;
 
 		void make_name(const std::string& name);
 
