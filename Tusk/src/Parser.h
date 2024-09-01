@@ -39,6 +39,7 @@ namespace Tusk {
 		FUNCTION_DECLARATION,
 		RETURN_STATEMENT,
 		CLASS_DECLARATION,
+		ENUM_DECLARATION,
 	};
 
 	struct ASTNode {
@@ -284,6 +285,20 @@ namespace Tusk {
 		std::string to_string() const override { return "Return\n" + expr->to_string(); }
 	};
 
+	struct EnumDeclaration : public Statement {
+		std::string enum_name{ "" };
+		std::vector<std::string> values;
+
+		EnumDeclaration(const std::string& name, const std::vector<std::string>& values) : enum_name{ name }, values{ values }{}
+		NodeType get_type() const override { return NodeType::ENUM_DECLARATION; }
+		std::string to_string() const override {
+			std::string str{ "" };
+			for (const auto& i : values)
+				str += i + ", ";
+			return "Enum declaration (" + str + ")\n";
+		}
+	};
+
 	// TREE
 	struct AST : ASTNode {
 		std::vector<std::shared_ptr<Statement>> statements;
@@ -357,5 +372,6 @@ namespace Tusk {
 		std::shared_ptr<Statement> return_statement();
 		std::shared_ptr<Statement> class_declaration();
 		std::shared_ptr<Statement> class_body();
+		std::shared_ptr<Statement> enum_declaration();
 	};
 }

@@ -1,8 +1,5 @@
 #include "pch.h"
 #include "lexer.h"
-#include <string>
-#include <iostream>
-#include <format>
 
 namespace Tusk {
     Token Lexer::lex() {

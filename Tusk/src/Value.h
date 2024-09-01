@@ -13,7 +13,8 @@ namespace Tusk {
 		CLASS,
 		INSTANCE,
 		ENUM,
-		VOID
+		VOID,
+		ENUM_VALUE
 	};
 
 	struct ValueObject {
@@ -57,6 +58,22 @@ namespace Tusk {
 
 		InstanceObject(ClassObject& class_ref) : class_ref{ class_ref } { }
 		ObjectType get_type() const override { return ObjectType::INSTANCE; }
+	};
+
+	struct EnumObject : public ValueObject {
+		std::string name{ "" };
+		std::vector<std::string> values;
+
+		EnumObject(const std::string& name = "", const std::vector<std::string>& values = {}) : name{ name }, values{ values } { }
+		ObjectType get_type() const override { return ObjectType::ENUM; }
+	};
+
+	struct EnumValue : public ValueObject {
+		std::shared_ptr<EnumObject> enum_obj;
+		std::string enum_name;
+
+		EnumValue(const std::shared_ptr<EnumObject>& enum_obj, const std::string& enum_name) : enum_obj{ enum_obj }, enum_name{ enum_name } { }
+		ObjectType get_type() const override { return ObjectType::ENUM_VALUE; }
 	};
 
 	class Value {
@@ -125,6 +142,12 @@ namespace Tusk {
 					break;
 				case ObjectType::INSTANCE:
 					os << "<" + value.get_object<InstanceObject>()->class_ref.class_name + " instance>";
+					break;
+				case ObjectType::ENUM:
+					os << "<enum " + value.get_object<EnumObject>()->name + ">";
+					break;
+				case ObjectType::ENUM_VALUE:
+					os << value.get_object<EnumValue>()->enum_obj->name + "." + value.get_object<EnumValue>()->enum_name;
 					break;
 				}
 			}

@@ -80,5 +80,6 @@ namespace Tusk {
 		void function_declaration(const std::shared_ptr<FunctionDeclaration>& function_decl, bool make_member = false);
 		void return_statement(const std::shared_ptr<ReturnStatement>& return_stmt);
 		void class_declaration(const std::shared_ptr<ClassDeclaration>& function_decl);
+		void enum_declaration(const std::shared_ptr<EnumDeclaration>& function_decl);
 	};
 }

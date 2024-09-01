@@ -244,6 +244,9 @@ namespace Tusk {
 		case NodeType::CLASS_DECLARATION:
 			class_declaration(std::static_pointer_cast<ClassDeclaration>(statement));
 			break;
+		case NodeType::ENUM_DECLARATION:
+			enum_declaration(std::static_pointer_cast<EnumDeclaration>(statement));
+			break;
 		case NodeType::VOID_STATEMENT:
 			break;
 		}
@@ -452,5 +455,16 @@ namespace Tusk {
 		
 
 		m_in_class_decl = false;
+	}
+	void Compiler::enum_declaration(const std::shared_ptr<EnumDeclaration>& enum_decl) {
+		std::shared_ptr<EnumObject> enum_obj = std::make_shared<EnumObject>();
+		enum_obj->name = enum_decl->enum_name;
+
+		write((uint8_t)Instruction::VAL_INDEX, add_constant(Value(enum_obj)));
+		for (const auto& val : enum_decl->values) {
+			enum_obj->values.push_back(val);
+		}
+
+		make_name(enum_obj->name);
 	}
 }

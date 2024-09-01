@@ -1,7 +1,5 @@
 #include "pch.h"
 #include "Parser.h"
-#include <iostream>
-#include <vector>
 
 namespace Tusk {
 	const std::shared_ptr<AST>& Parser::parse() {
@@ -241,6 +239,10 @@ namespace Tusk {
 				stmt = class_declaration();
 				expect_semicolon = false;
 			}
+			else if (tok.value == "enum") {
+				stmt = enum_declaration();
+				expect_semicolon = false;
+			}
 			else if (tok.value == "while") {
 				stmt = while_statement();
 				expect_semicolon = false;
@@ -443,5 +445,35 @@ namespace Tusk {
 		else
 			report_error("Expected function or variable declaration");
 		return stmt;
+	}
+
+	std::shared_ptr<Statement> Parser::enum_declaration() {
+		advance();
+		const Token& tok = current_token();
+		consume(TokenType::ID, "Expected identifier");
+
+		const std::string& name = tok.value;
+		if (current_token().type != TokenType::L_BRACE) {
+			report_error("Expected '{'");
+			return nullptr;
+		}
+		advance();
+		std::vector<std::string> names;
+		while (current_token().type != TokenType::R_BRACE && current_token().type != TokenType::_EOF) {
+			const Token& tok = current_token();
+			consume(TokenType::ID, "Expected identifier");
+			if (current_token().type == TokenType::COMMA)
+				advance();
+			names.push_back(tok.value);
+		}
+
+		if (current_token().type == TokenType::_EOF) {
+			report_error("Expected '}'");
+			return nullptr;
+		}
+		else
+			advance();
+
+		return std::make_shared<EnumDeclaration>(name, names);
 	}
 }

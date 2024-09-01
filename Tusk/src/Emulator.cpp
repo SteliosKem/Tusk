@@ -1,7 +1,6 @@
 #include "pch.h"
 #include "Emulator.h"
 #include "Bytecode.h"
-#include <iostream>
 
 namespace Tusk {
 	inline bool is_true(const Value& val) {
@@ -228,24 +227,47 @@ namespace Tusk {
 			}
 			case Instruction::GET_MEMBER: {
 				Value val = pop_stack();
-				if (!(val.is<std::shared_ptr<ValueObject>>() && val.get_object_type() == ObjectType::INSTANCE)) {
-					m_error_handler.report_error("Cannot access members of a non-instance", {}, ErrorType::RUNTIME_ERROR);
+				if (val.is<std::shared_ptr<ValueObject>>()) {
+					switch (val.get_object_type())
+					{
+					case ObjectType::INSTANCE: {
+						std::shared_ptr<InstanceObject> instance = val.get_object<InstanceObject>();
+						const std::string& name = read_value().get_object<StringObject>()->string;
+						if (instance->public_members.find(name) == instance->public_members.end()) {
+							m_error_handler.report_error("Instance of class " + instance->class_ref.class_name + " does not have member " + name, {}, ErrorType::RUNTIME_ERROR);
+							return Result::RUNTIME_ERROR;
+						}
+						else
+							push_stack(instance->public_members[name]);
+						break;
+					}
+					case ObjectType::ENUM: {
+						std::shared_ptr<EnumObject> instance = val.get_object<EnumObject>();
+						const std::string& name = read_value().get_object<StringObject>()->string;
+						if (std::find(instance->values.begin(), instance->values.end(), name) == instance->values.end()) {
+							m_error_handler.report_error("Enum " + instance->name + " does not have value " + name, {}, ErrorType::RUNTIME_ERROR);
+							return Result::RUNTIME_ERROR;
+						}
+						else
+							push_stack(Value(std::make_shared<EnumValue>(instance, name)));
+						break;
+					}
+					default:
+						m_error_handler.report_error("Cannot access members of a non-instance or non-enum", {}, ErrorType::RUNTIME_ERROR);
+						return Result::RUNTIME_ERROR;
+					}
+				}
+				else {
+					m_error_handler.report_error("Cannot access members of a non-instance or non-enum", {}, ErrorType::RUNTIME_ERROR);
 					return Result::RUNTIME_ERROR;
 				}
-				std::shared_ptr<InstanceObject> instance = val.get_object<InstanceObject>();
-				const std::string& name = read_value().get_object<StringObject>()->string;
-				if (instance->public_members.find(name) == instance->public_members.end()) {
-					m_error_handler.report_error("Instance of class " + instance->class_ref.class_name + " does not have member " + name, {}, ErrorType::RUNTIME_ERROR);
-					return Result::RUNTIME_ERROR;
-				}
-				else
-					push_stack(instance->public_members[name]);
+				
 				break;
 			}
 			case Instruction::SET_MEMBER: {
 				Value val = pop_stack();
 				if (!(val.is<std::shared_ptr<ValueObject>>() && val.get_object_type() == ObjectType::INSTANCE)) {
-					m_error_handler.report_error("Cannot access members of a non-instance", {}, ErrorType::RUNTIME_ERROR);
+					m_error_handler.report_error("Cannot set members of a non-instance", {}, ErrorType::RUNTIME_ERROR);
 					return Result::RUNTIME_ERROR;
 				}
 				std::shared_ptr<InstanceObject> instance = val.get_object<InstanceObject>();

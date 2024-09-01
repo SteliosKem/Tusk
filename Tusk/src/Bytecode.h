@@ -36,7 +36,7 @@ namespace Tusk {
 		SET_MEMBER,
 		MAKE_MEMBER,
 		METHOD_CALL,
-		INHERIT
+		INHERIT,
 	};
 
 	struct Unit {
