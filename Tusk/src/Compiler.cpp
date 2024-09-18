@@ -308,32 +308,32 @@ namespace Tusk {
 
 	void Compiler::if_statement(const std::shared_ptr<IfStatement>& stmt) {
 		expression(stmt->condition);
-		uint8_t false_index = add_constant(m_bytecode_out.index());
+		uint8_t false_index = add_constant(current_unit()->index());
 		write((uint8_t)Instruction::JUMP_IF_FALSE, false_index);
 		statement(stmt->body);
 		uint8_t end_index{ 0 };
 		if (stmt->else_body) {
-			end_index = add_constant(m_bytecode_out.index());
+			end_index = add_constant(current_unit()->index());
 			write((uint8_t)Instruction::JUMP, end_index);
 		}
 		
-		m_bytecode_out.get_values()[false_index] = m_bytecode_out.index();
+		current_unit()->get_values()[false_index] = current_unit()->index();
 		if (stmt->else_body) {
 			
 			statement(stmt->else_body);
-			m_bytecode_out.get_values()[end_index] = m_bytecode_out.index();
+			current_unit()->get_values()[end_index] = current_unit()->index();
 		}
 	}
 
 	void Compiler::while_statement(const std::shared_ptr<WhileStatement>& stmt) {
-		uint8_t top_of_loop = add_constant(m_bytecode_out.index());
+		uint8_t top_of_loop = add_constant(current_unit()->index());
 		expression(stmt->condition);
-		uint8_t false_index = add_constant(m_bytecode_out.index());
+		uint8_t false_index = add_constant(current_unit()->index());
 		m_loop_stack.push_back({top_of_loop, false_index});
 		write((uint8_t)Instruction::JUMP_IF_FALSE, false_index);
 		statement(stmt->body);
 		write((uint8_t)Instruction::JUMP, top_of_loop);
-		m_bytecode_out.get_values()[false_index] = m_bytecode_out.index();
+		current_unit()->get_values()[false_index] = current_unit()->index();
 		
 	}
 

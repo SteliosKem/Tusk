@@ -29,6 +29,12 @@ namespace Tusk {
 		void pop_unit() {
 			m_unit_stack.pop_back();
 		}
+		Unit* current_unit() {
+			if (m_unit_stack.empty())
+				return &m_bytecode_out;
+			else
+				return m_unit_stack[m_unit_stack.size() - 1];
+		}
 
 		bool m_set_member = false;
 
