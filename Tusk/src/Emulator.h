@@ -27,6 +27,7 @@ namespace Tusk {
 
 		
 		Result run(const Unit* bytes);
+		const std::unordered_map<std::string, Value>& get_global_table() { return m_global_table; }
 	private:
 		Result run();
 

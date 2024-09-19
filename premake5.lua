@@ -11,7 +11,7 @@ workspace "Tusk"
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
 project "Tusk"
-	location "Ivory"
+	location "Tusk"
 	kind "StaticLib"
 	language "C++"
 	cppdialect "C++20"
