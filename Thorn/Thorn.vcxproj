@@ -131,12 +131,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Ivory\Tusk.vcxproj">
-      <Project>{4C208D7C-3857-8E0D-E143-7410CD590A0F}</Project>
-    </ProjectReference>
+    <ClCompile Include="src\Thorn.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\Thorn.cpp" />
+    <ProjectReference Include="..\Tusk\Tusk.vcxproj">
+      <Project>{4C208D7C-3857-8E0D-E143-7410CD590A0F}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

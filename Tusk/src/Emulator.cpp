@@ -373,6 +373,7 @@ namespace Tusk {
 				Result res = run();
 				m_call_stack.pop_back();
 				pop_data();
+				pop_stack();
 				push_stack(m_return_value_register);
 				return res;
 			}

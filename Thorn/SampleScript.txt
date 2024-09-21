@@ -1,0 +1,85 @@
+class Person {
+    //let name;
+    //let max_health;
+    //let health;
+    //let damage_points;
+
+    fn make(name, max_health, damage_points) -> {
+        this.name = name;
+        this.max_health = max_health;
+        this.damage_points = damage_points;
+        this.health = max_health;
+    }
+
+    fn take_damage(damage) -> {
+        this.health = this.health - damage;
+        log "Player ";
+        log this.name;
+        log " has received ";
+        log damage;
+        log " damage! ";
+        if(this.health <= 0) ->
+            this.on_death();
+    }
+
+    fn on_death() -> {
+        log "Player ";
+        log this.name;
+        log " has died! ";
+    }
+
+    fn respawn() -> {
+        this.health = this.max_health;
+    }
+
+    fn is_alive() ->
+        return this.health > 0;
+}
+
+class Enemy {
+    //let name;
+    //let max_health;
+    //let damage_points;
+    //let target_enemy;
+    //let default_damage;
+
+    fn make(name, max_health, damage_points) -> {
+        this.name = name;
+        this.max_health = max_health;
+        this.damage_points = damage_points;
+        this.default_damage = 50;
+    }
+
+    fn target(enemy) -> {
+        this.target_enemy = enemy;
+    }
+
+    fn attack(damage) -> {
+        if(damage > 0) ->
+            this.target_enemy.take_damage(damage);
+        else
+            this.target_enemy.take_damage(this.default_damage);
+        if(!this.target_enemy.is_alive()) -> {
+            log "Enemy ";
+            log this.name;
+            log " has killed player ";
+            log this.target_enemy.name;
+        }
+    }
+}
+
+let player = Person("PLAYER 1", 100, 20);
+player.take_damage(50);
+player.take_damage(50);
+log player.is_alive();
+player.respawn();
+log player.health;
+
+let enemy = Enemy("GOBLIN", 50, 50);
+//enemy.target(player);
+//enemy.attack(60);
+//enemy.attack();
+
+/*class Player -> Person {
+
+}*/

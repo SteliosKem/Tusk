@@ -6,6 +6,7 @@
 #include "Emulator.h"
 #include <fstream>
 #include <sstream>
+#include <filesystem>
 
 using namespace Tusk;
 
@@ -71,7 +72,14 @@ int main(int argc, char* argv[])
             std::cout << "> ";
             std::getline(std::cin, in);
 
-            run(in, emulator, handler);
+            std::ifstream file(in);
+            std::stringstream buffer;
+
+            buffer << file.rdbuf();
+            std::cout << buffer.str();
+            std::cout << std::filesystem::current_path();
+            run(buffer.str(), emulator, handler);
+            //run(in, emulator, handler);
         }
     }
 }
