@@ -214,6 +214,8 @@ namespace Tusk {
 		else if (tok.type == TokenType::KEYWORD) {
 			if (tok.value == "log")
 				stmt = log_statement();
+			else if (tok.value == "logl")
+				stmt = log_statement();
 			else if (tok.value == "let")
 				stmt = variable_declaration();
 			else if (tok.value == "break") {
@@ -268,9 +270,9 @@ namespace Tusk {
 		return stmt;
 	}
 
-	std::shared_ptr<Statement> Parser::log_statement() {
+	std::shared_ptr<Statement> Parser::log_statement(bool line) {
 		advance();
-		return std::make_shared<LogStatement>( expression() );
+		return std::make_shared<LogStatement>( expression(), line );
 	}
 
 	std::shared_ptr<Statement> Parser::expression_statement() {

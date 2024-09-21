@@ -112,7 +112,8 @@ namespace Tusk {
 			if (m_set_member && !l_value->access->access)
 				write((uint8_t)Instruction::SET_MEMBER);
 			else
-				write((uint8_t)Instruction::GET_MEMBER);
+				if (l_value->access->name->get_type() != NodeType::CALL)
+					write((uint8_t)Instruction::GET_MEMBER);
 			lvalue(l_value->access);
 		}
 	}

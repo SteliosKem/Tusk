@@ -1,0 +1,50 @@
+class Person {
+    fn make() -> {
+        this.name = "PLAYER";
+        this.health = 1;
+    }
+
+    fn take_damage() ->
+        this.health = 0;
+
+    fn is_alive() ->
+        return this.health > 0;
+}
+
+class Enemy {
+    fn make() ->
+        this.target_enemy = 0;
+
+    fn target(enemy) -> {
+        this.target_enemy = enemy;
+        log "Enemy has targeted ";
+        log this.target_enemy.name;
+    }
+
+    fn attack(damage) -> {
+        if damage > 0 -> {
+            this.target_enemy.take_damage(damage);
+        }
+        else
+            this.target_enemy.take_damage(this.default_damage);
+
+        if !this.target_enemy.is_alive() -> {
+            log "Enemy ";
+            log this.name;
+            log " has killed player ";
+            log this.target_enemy.name;
+        }
+        log "hello";
+    }
+}
+
+let player = Person();
+
+let enemy = Enemy();
+enemy.target(player);
+enemy.attack(60);
+enemy.attack(-1);
+
+/*class Player -> Person {
+
+}*/

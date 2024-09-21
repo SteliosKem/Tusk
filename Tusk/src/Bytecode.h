@@ -13,6 +13,7 @@ namespace Tusk {
 		VAL_INDEX,
 		POP,
 		LOG,
+		LOGL,
 		NEGATE,
 		EQUAL,
 		NOT_EQUAL,

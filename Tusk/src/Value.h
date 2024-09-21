@@ -129,7 +129,7 @@ namespace Tusk {
 			else if (value.is<std::shared_ptr<ValueObject>>()) {
 				switch (value.get_object_type()) {
 				case ObjectType::STRING:
-					os << '"' << value.get_object<StringObject>()->string << '"';
+					os << value.get_object<StringObject>()->string;
 					break;
 				case ObjectType::VOID:
 					os << "void";

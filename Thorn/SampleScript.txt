@@ -1,8 +1,8 @@
 class Person {
-    //let name;
-    //let max_health;
-    //let health;
-    //let damage_points;
+    let name;
+    let max_health;
+    let health;
+    let damage_points;
 
     fn make(name, max_health, damage_points) -> {
         this.name = name;
@@ -37,28 +37,34 @@ class Person {
 }
 
 class Enemy {
-    //let name;
-    //let max_health;
-    //let damage_points;
-    //let target_enemy;
-    //let default_damage;
+    let name;
+    let max_health;
+    let damage_points;
+    let target_enemy;
+    let default_damage;
 
-    fn make(name, max_health, damage_points) -> {
-        this.name = name;
-        this.max_health = max_health;
-        this.damage_points = damage_points;
+    fn make() -> {
+        this.name = "Goblin";
+        this.max_health = 50;
         this.default_damage = 50;
     }
 
     fn target(enemy) -> {
         this.target_enemy = enemy;
+        log "Enemy has targeted ";
+        log this.target_enemy.name;
     }
 
     fn attack(damage) -> {
-        if(damage > 0) ->
+        if damage > 0 -> {
             this.target_enemy.take_damage(damage);
+            //this.target_enemy.health = this.target_enemy.health - damage;
+            //log this.target_enemy.health;
+        }
         else
-            this.target_enemy.take_damage(this.default_damage);
+            //this.target_enemy.te_damage(this.default_damage);
+            this.target_enemy.health = this.target_enemy.health - this.default_damage;
+	
         if(!this.target_enemy.is_alive()) -> {
             log "Enemy ";
             log this.name;
@@ -69,17 +75,28 @@ class Enemy {
 }
 
 let player = Person("PLAYER 1", 100, 20);
-player.take_damage(50);
-player.take_damage(50);
-log player.is_alive();
-player.respawn();
-log player.health;
+//player.take_damage(50);
+//player.take_damage(50);
+//log player.is_alive();
+//player.respawn();
+//log player.health;
 
-let enemy = Enemy("GOBLIN", 50, 50);
-//enemy.target(player);
-//enemy.attack(60);
-//enemy.attack();
+//let enemy = Enemy("GOBLIN", 50, 50);
+let enemy = Enemy();
+enemy.target(player);
+enemy.attack(60);
+enemy.attack(-1);
 
 /*class Player -> Person {
 
 }*/
+
+/*this.player.call();
+name access name access call;
+
+(name get name)
+
+
+
+this.call();*/
+

@@ -175,8 +175,9 @@ namespace Tusk {
 
 	struct LogStatement : public Statement {
 		std::shared_ptr<Expression> output;
+		bool log_line = false;
 
-		LogStatement(const std::shared_ptr<Expression>& out) : output{ out } {}
+		LogStatement(const std::shared_ptr<Expression>& out, bool line = false) : output{ out }, log_line{line} {}
 		NodeType get_type() const override { return NodeType::LOG_STATEMENT; }
 		std::string to_string() const override { return "Log " + output->to_string() + "\n"; }
 	};
@@ -362,7 +363,7 @@ namespace Tusk {
 		// STATEMENTS
 		std::shared_ptr<Statement> statement();
 		std::shared_ptr<Statement> compount_statement();
-		std::shared_ptr<Statement> log_statement();
+		std::shared_ptr<Statement> log_statement(bool line = false;);
 		std::shared_ptr<Statement> expression_statement();
 		std::shared_ptr<Statement> variable_declaration(bool allow_set_value = true);
 		std::shared_ptr<Statement> assignment();
