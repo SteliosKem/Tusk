@@ -21,6 +21,19 @@ namespace Tusk {
 		return (*bytes()).get_values()[next_byte()];		// Get the constant index and pass it to the constant pool to return the value
 	}
 
+
+	namespace Standard {
+		static Value read(int arg_count, Value* arguments) {
+			std::string str;
+			std::getline(std::cin, str);
+			return Value(std::make_shared<StringObject>(str));
+		}
+	}
+
+	void Emulator::init() {
+		make_standard_fn("read", Standard::read);
+	}
+
 	void Emulator::push_stack(const Value& val) {			// Push value to the stack
 		m_stack.push_back(val);
 	}
@@ -358,6 +371,14 @@ namespace Tusk {
 				}
 				return res;
 			}
+			case ObjectType::STANDARD_FN: {
+				StandardFnType std_func = value_to_call.get_object<StandardFn>()->function;
+				Value res = std_func(arg_count, &stack_top() - arg_count);
+				for (int i = 0; i <= arg_count; i++)
+					m_stack.pop_back();
+				push_stack(res);
+				return Result::OK;
+			}
 			default:
 				break;
 			}
@@ -383,5 +404,10 @@ namespace Tusk {
 		}
 		m_error_handler.report_error("Cannot call non-function and non-class objects", {}, ErrorType::RUNTIME_ERROR);
 		return Result::RUNTIME_ERROR;
+	}
+
+	void Emulator::make_standard_fn(const std::string& name, StandardFnType func) {
+		//push_stack(Value(std::make_shared<StandardFn>(func)));
+		m_global_table[name] = Value(std::make_shared<StandardFn>(func));
 	}
 }

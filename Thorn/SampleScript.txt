@@ -74,7 +74,7 @@ class Enemy {
     }
 }
 
-let player = Person("PLAYER 1", 100, 20);
+let player = Person(read(), 100, 20);
 player.take_damage(50);
 player.take_damage(50);
 log player.is_alive();

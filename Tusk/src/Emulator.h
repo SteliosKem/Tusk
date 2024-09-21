@@ -9,6 +9,10 @@
 #include <unordered_map>
 
 namespace Tusk {
+	namespace Standard {
+		static Value read(int arg_count, Value* arguments);
+	}
+
 	enum class OperationType {
 		ARITHMETIC,
 		RELATIONAL,
@@ -22,13 +26,13 @@ namespace Tusk {
 
 	class Emulator {
 	public:
-		Emulator(ErrorHandler& handler) : m_error_handler(handler) { m_call_stack.push_back({}); }
-		Emulator(const Unit* bytes, ErrorHandler& handler) : m_error_handler{ handler } { m_call_stack.push_back({}); }
-
+		Emulator(ErrorHandler& handler) : m_error_handler(handler) { m_call_stack.push_back({}); init(); }
+		Emulator(const Unit* bytes, ErrorHandler& handler) : m_error_handler{ handler } { m_call_stack.push_back({}); init(); }
 		
 		Result run(const Unit* bytes);
 		const std::unordered_map<std::string, Value>& get_global_table() { return m_global_table; }
 	private:
+		void init();
 		Result run();
 
 		struct CallInfo {
@@ -78,5 +82,7 @@ namespace Tusk {
 		bool equality();
 		Result call(const Value& value_to_call, uint8_t arg_count);
 		Result call_method(const std::string& name, uint8_t arg_count);
+
+		void make_standard_fn(const std::string& name, StandardFnType func);
 	};
 }

@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "Compiler.h"
+#include "Standard.h"
 
 namespace Tusk {
 	void Compiler::write(uint8_t byte) {
@@ -88,7 +89,8 @@ namespace Tusk {
 
 	void Compiler::name(const std::shared_ptr<Name>& name) {
 		int64_t local_idx = -1;
-		if(std::find(m_globals.begin(), m_globals.end(), name->string) != m_globals.end())
+		if(std::find(m_globals.begin(), m_globals.end(), name->string) != m_globals.end() 
+			|| std::find(Standard::standard_functions.begin(), Standard::standard_functions.end(), name->string) != Standard::standard_functions.end())
 			write((uint8_t)Instruction::GET_GLOBAL, add_constant(Value(std::make_shared<StringObject>(name->string))));
 		else if ((local_idx = find_local(name->string)) != -1)
 			write((uint8_t)Instruction::GET_LOCAL, add_constant(Value(local_idx)));
@@ -259,6 +261,7 @@ namespace Tusk {
 		else
 			write((uint8_t)Instruction::LOG, (uint8_t)Instruction::POP);
 	}
+
 	void Compiler::expression_statement(const std::shared_ptr<ExpressionStatement>& expression_statement) {
 		expression(expression_statement->expression);
 		write((uint8_t)Instruction::POP);

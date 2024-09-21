@@ -68,5 +68,8 @@
     <ClInclude Include="src\Error.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\Standard.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

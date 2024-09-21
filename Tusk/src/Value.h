@@ -3,9 +3,11 @@
 #include <memory>
 #include <iostream>
 #include <unordered_map>
+#include <functional>
 
 namespace Tusk {
 	struct Unit;
+	
 	enum class ObjectType {
 		OBJECT,
 		STRING,
@@ -14,7 +16,8 @@ namespace Tusk {
 		INSTANCE,
 		ENUM,
 		VOID,
-		ENUM_VALUE
+		ENUM_VALUE,
+		STANDARD_FN
 	};
 
 	struct ValueObject {
@@ -74,6 +77,14 @@ namespace Tusk {
 
 		EnumValue(const std::shared_ptr<EnumObject>& enum_obj, const std::string& enum_name) : enum_obj{ enum_obj }, enum_name{ enum_name } { }
 		ObjectType get_type() const override { return ObjectType::ENUM_VALUE; }
+	};
+
+	using StandardFnType = std::function<Value(int, Value*)>;
+	struct StandardFn : public ValueObject {
+		StandardFnType function;
+
+		StandardFn(const StandardFnType& func) : function{ func } { }
+		ObjectType get_type() const override { return ObjectType::STANDARD_FN; }
 	};
 
 	class Value {
@@ -136,6 +147,9 @@ namespace Tusk {
 					break;
 				case ObjectType::FUNCTION:
 					os << "<function " + value.get_object<FunctionObject>()->function_name + ">";
+					break;
+				case ObjectType::STANDARD_FN:
+					os << "<std function>";
 					break;
 				case ObjectType::CLASS:
 					os << "<class " + value.get_object<ClassObject>()->class_name + ">";
