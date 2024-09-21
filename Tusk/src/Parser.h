@@ -363,7 +363,7 @@ namespace Tusk {
 		// STATEMENTS
 		std::shared_ptr<Statement> statement();
 		std::shared_ptr<Statement> compount_statement();
-		std::shared_ptr<Statement> log_statement(bool line = false;);
+		std::shared_ptr<Statement> log_statement(bool line = false);
 		std::shared_ptr<Statement> expression_statement();
 		std::shared_ptr<Statement> variable_declaration(bool allow_set_value = true);
 		std::shared_ptr<Statement> assignment();

@@ -131,6 +131,9 @@ namespace Tusk {
 			case Instruction::LOG:
 				std::cout << stack_top();
 				break;
+			case Instruction::LOGL:
+				std::cout << stack_top() << '\n';
+				break;
 			case Instruction::POP:
 				pop_stack();
 				break;

@@ -254,7 +254,10 @@ namespace Tusk {
 	}
 	void Compiler::log_statement(const std::shared_ptr<LogStatement>& log_statement) {
 		expression(log_statement->output);
-		write((uint8_t)Instruction::LOG, (uint8_t)Instruction::POP);
+		if(log_statement->log_line)
+			write((uint8_t)Instruction::LOGL, (uint8_t)Instruction::POP);
+		else
+			write((uint8_t)Instruction::LOG, (uint8_t)Instruction::POP);
 	}
 	void Compiler::expression_statement(const std::shared_ptr<ExpressionStatement>& expression_statement) {
 		expression(expression_statement->expression);

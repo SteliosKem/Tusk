@@ -17,7 +17,7 @@ class Person {
         log this.name;
         log " has received ";
         log damage;
-        log " damage! ";
+        logl " damage!";
         if(this.health <= 0) ->
             this.on_death();
     }
@@ -25,7 +25,7 @@ class Person {
     fn on_death() -> {
         log "Player ";
         log this.name;
-        log " has died! ";
+        logl " has died! ";
     }
 
     fn respawn() -> {
@@ -52,7 +52,7 @@ class Enemy {
     fn target(enemy) -> {
         this.target_enemy = enemy;
         log "Enemy has targeted ";
-        log this.target_enemy.name;
+        logl this.target_enemy.name;
     }
 
     fn attack(damage) -> {
@@ -69,17 +69,17 @@ class Enemy {
             log "Enemy ";
             log this.name;
             log " has killed player ";
-            log this.target_enemy.name;
+            logl this.target_enemy.name;
         }
     }
 }
 
 let player = Person("PLAYER 1", 100, 20);
-//player.take_damage(50);
-//player.take_damage(50);
-//log player.is_alive();
-//player.respawn();
-//log player.health;
+player.take_damage(50);
+player.take_damage(50);
+log player.is_alive();
+player.respawn();
+log player.health;
 
 //let enemy = Enemy("GOBLIN", 50, 50);
 let enemy = Enemy();

@@ -13,7 +13,7 @@ namespace Tusk {
 
 		const std::vector<Token>& analyze();					// Lexes the source code and returns vector of tokens
 
-		std::array<std::string, 14> keywords{ "return", "let", "fn", "log", "if", "else", 
+		std::array<std::string, 15> keywords{ "return", "let", "fn", "log", "if", "else", 
 			"while", "do", "for", "break", "continue", "class", "this", "enum", "logl"};
 		//std::array<std::string, 15> types{ "isize", "fsize", "i8", "i16", "i32", "i64", "f32", "f64", "u8", "usize", "u16", "u32", "u64", "string", "void" };
 	private:

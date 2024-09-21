@@ -215,7 +215,7 @@ namespace Tusk {
 			if (tok.value == "log")
 				stmt = log_statement();
 			else if (tok.value == "logl")
-				stmt = log_statement();
+				stmt = log_statement(true);
 			else if (tok.value == "let")
 				stmt = variable_declaration();
 			else if (tok.value == "break") {
