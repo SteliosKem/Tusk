@@ -79,6 +79,7 @@ namespace Tusk {
 
 		//
 		Result binary_operation(TokenType operation);
+		void str_concatenate(const std::shared_ptr<StringObject>& str1, const std::shared_ptr<StringObject>& str2);
 		bool equality();
 		Result call(const Value& value_to_call, uint8_t arg_count);
 		Result call_method(const std::string& name, uint8_t arg_count);

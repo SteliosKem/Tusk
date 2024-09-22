@@ -13,6 +13,10 @@ namespace Tusk {
 		return val.is<int64_t>() || val.is<double>();
 	}
 
+	inline bool is_str(const Value& val) {
+		return val.is<std::shared_ptr<ValueObject>>() && val.get_object_type() == ObjectType::STRING;
+	}
+
 	inline uint8_t Emulator::next_byte() {
 		return (*bytes())[instruction_index()++];			// Return byte at index and advance it
 	}
@@ -112,6 +116,10 @@ namespace Tusk {
 		return res;
 	}
 
+	void Emulator::str_concatenate(const std::shared_ptr<StringObject>& str1, const std::shared_ptr<StringObject>& str2) {
+		push_stack(Value(std::make_shared<StringObject>(str1->string + str2->string)));
+	}
+
 	Result Emulator::run() {
  		Instruction instruction;
 		while (true) {
@@ -120,7 +128,9 @@ namespace Tusk {
 				m_stack.push_back(read_value());
 				break;
 			case Instruction::ADD:
-				if (binary_operation(TokenType::PLUS) != Result::OK)
+				if (is_str(stack_top()) && is_str(stack_top(1)))
+					str_concatenate(pop_stack().get_object<StringObject>(), pop_stack().get_object<StringObject>());
+				else if (binary_operation(TokenType::PLUS) != Result::OK)
 					return Result::RUNTIME_ERROR;
 				break;
 			case Instruction::SUBTRACT:
