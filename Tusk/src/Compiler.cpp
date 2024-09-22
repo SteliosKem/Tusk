@@ -223,14 +223,17 @@ namespace Tusk {
 		case NodeType::ASSIGNMENT:
 			assignment(std::static_pointer_cast<Assignment>(statement));
 			break;
+		case NodeType::COMPOUND_ASSIGNMENT:
+			compound_assignment(std::static_pointer_cast<CompoundAssignment>(statement));
+			break;
 		case NodeType::IF_STATEMENT:
 			if_statement(std::static_pointer_cast<IfStatement>(statement));
 			break;
 		case NodeType::WHILE_STATEMENT:
 			while_statement(std::static_pointer_cast<WhileStatement>(statement));
 			break;
-		case NodeType::COMPOUNT_STATEMENT:
-			compount_statement(std::static_pointer_cast<CompountStatement>(statement));
+		case NodeType::COMPOUND_STATEMENT:
+			compound_statement(std::static_pointer_cast<CompoundStatement>(statement));
 			break;
 		case NodeType::BREAK_STATEMENT:
 			break_statement(std::static_pointer_cast<BreakStatement>(statement));
@@ -313,6 +316,54 @@ namespace Tusk {
 		}
 	}
 
+	void Compiler::compound_assignment(const std::shared_ptr<CompoundAssignment>& compound) {
+		std::shared_ptr<LValue> lval = compound->lvalue->lvalue;
+		bool is_global = false;
+		bool is_member = false;
+		int64_t local_idx = -1;
+		if (!lval->access && lval->name->get_type() == NodeType::NAME) {
+			std::shared_ptr<Name> name = std::static_pointer_cast<Name>(lval->name);
+			if (std::find(m_globals.begin(), m_globals.end(), name->string) != m_globals.end()) {
+				write((uint8_t)Instruction::GET_GLOBAL, add_constant(Value(std::make_shared<StringObject>(name->string))));
+				is_global = true;
+			}
+			else if ((local_idx = find_local(name->string)) != -1)
+				write((uint8_t)Instruction::GET_LOCAL, add_constant(Value(local_idx)));
+			else
+				m_error_handler.report_error("Name '" + name->string + "' does not exist in this scope", {}, ErrorType::COMPILE_ERROR);
+		}
+		else {
+			lvalue_start(compound->lvalue);
+			is_member = true;
+		}
+		expression(compound->expression);
+		switch (compound->action) {
+		case CompoundAssignment::ADD:
+			write((uint8_t)Instruction::ADD);
+			break;
+		case CompoundAssignment::MULTIPLY:
+			write((uint8_t)Instruction::MULTIPLY);
+			break;
+		case CompoundAssignment::SUBTRACT:
+			write((uint8_t)Instruction::SUBTRACT);
+			break;
+		case CompoundAssignment::DIVIDE:
+			write((uint8_t)Instruction::DIVIDE);
+			break;
+		}
+		if (is_member) {
+			m_set_member = true;
+			lvalue_start(compound->lvalue);
+			m_set_member = false;
+		}
+		else if (is_global) {
+			std::shared_ptr<Name> name = std::static_pointer_cast<Name>(lval->name);
+			write((uint8_t)Instruction::SET_GLOBAL, add_constant(Value(std::make_shared<StringObject>(name->string))));
+		}
+		else
+			write((uint8_t)Instruction::SET_LOCAL, add_constant(Value(local_idx)));
+	}
+
 	void Compiler::if_statement(const std::shared_ptr<IfStatement>& stmt) {
 		expression(stmt->condition);
 		uint8_t false_index = add_constant(current_unit()->index());
@@ -344,9 +395,9 @@ namespace Tusk {
 		
 	}
 
-	void Compiler::compount_statement(const std::shared_ptr<CompountStatement>& compount) {
+	void Compiler::compound_statement(const std::shared_ptr<CompoundStatement>& compound) {
 		m_current_scope++;
-		for (const auto& stmt : compount->statements) {
+		for (const auto& stmt : compound->statements) {
 			statement(stmt);
 		}
 		m_current_scope--;

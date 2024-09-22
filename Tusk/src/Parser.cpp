@@ -208,7 +208,7 @@ namespace Tusk {
 		std::shared_ptr<Statement> stmt{ nullptr };
 		const Token& tok = current_token();
 		if (tok.type == TokenType::L_BRACE) {
-			stmt = compount_statement();
+			stmt = compound_statement();
 			expect_semicolon = false;
 		}
 		else if (tok.type == TokenType::KEYWORD) {
@@ -313,6 +313,22 @@ namespace Tusk {
 			advance();
 			return std::make_shared<Assignment>(lval, expression());
 		}
+		else if (current_token().type == TokenType::PLUS_EQUAL) {
+			advance();
+			return std::make_shared<CompoundAssignment>(lval, expression(), CompoundAssignment::ADD);
+		}
+		else if (current_token().type == TokenType::MINUS_EQUAL) {
+			advance();
+			return std::make_shared<CompoundAssignment>(lval, expression(), CompoundAssignment::SUBTRACT);
+		}
+		else if (current_token().type == TokenType::STAR_EQUAL) {
+			advance();
+			return std::make_shared<CompoundAssignment>(lval, expression(), CompoundAssignment::MULTIPLY);
+		}
+		else if (current_token().type == TokenType::SLASH_EQUAL) {
+			advance();
+			return std::make_shared<CompoundAssignment>(lval, expression(), CompoundAssignment::DIVIDE);
+		}
 		else {
 			m_current_index = current_index;
 			return expression_statement();
@@ -341,7 +357,7 @@ namespace Tusk {
 		return std::make_shared<WhileStatement>(condition, body);
 	}
 
-	std::shared_ptr<Statement> Parser::compount_statement() {
+	std::shared_ptr<Statement> Parser::compound_statement() {
 		advance();
 		std::vector<std::shared_ptr<Statement>> statements;
 		while (current_token().type != TokenType::R_BRACE && current_token().type != TokenType::_EOF)
@@ -354,7 +370,7 @@ namespace Tusk {
 		else
 			advance();
 
-		return std::make_shared<CompountStatement>(statements);
+		return std::make_shared<CompoundStatement>(statements);
 	}
 
 	std::shared_ptr<Statement> Parser::function() {
@@ -429,7 +445,7 @@ namespace Tusk {
 		else
 			advance();
 
-		return std::make_shared<ClassDeclaration>(name, std::make_shared<CompountStatement>(statements), parent);
+		return std::make_shared<ClassDeclaration>(name, std::make_shared<CompoundStatement>(statements), parent);
 	}
 
 	std::shared_ptr<Statement> Parser::class_body() {

@@ -26,7 +26,7 @@ namespace Tusk {
 		LVALUE_START,
 
 		//STATEMENTS
-		COMPOUNT_STATEMENT,
+		COMPOUND_STATEMENT,
 		LOG_STATEMENT,
 		EXPRESSION_STATEMENT,
 		VARIABLE_DECLARATION,
@@ -40,6 +40,7 @@ namespace Tusk {
 		RETURN_STATEMENT,
 		CLASS_DECLARATION,
 		ENUM_DECLARATION,
+		COMPOUND_ASSIGNMENT
 	};
 
 	struct ASTNode {
@@ -165,12 +166,12 @@ namespace Tusk {
 		std::string to_string() const override { return "Statement"; }
 	};
 
-	struct CompountStatement : public Statement {
+	struct CompoundStatement : public Statement {
 		std::vector<std::shared_ptr<Statement>> statements;
 
-		CompountStatement(const std::vector<std::shared_ptr<Statement>>& stmts) : statements{ stmts } {}
-		NodeType get_type() const override { return NodeType::COMPOUNT_STATEMENT; }
-		std::string to_string() const override { std::string i; for (const auto& s : statements) i += s->to_string(); return "Compount Statement: " + i; }
+		CompoundStatement(const std::vector<std::shared_ptr<Statement>>& stmts) : statements{ stmts } {}
+		NodeType get_type() const override { return NodeType::COMPOUND_STATEMENT; }
+		std::string to_string() const override { std::string i; for (const auto& s : statements) i += s->to_string(); return "Compound Statement: " + i; }
 	};
 
 	struct LogStatement : public Statement {
@@ -206,6 +207,23 @@ namespace Tusk {
 		Assignment(const std::shared_ptr<LValueStartNode>& lvalue, const std::shared_ptr<Expression>& expr) : lvalue{ lvalue }, expression{ expr } {}
 		NodeType get_type() const override { return NodeType::ASSIGNMENT; }
 		std::string to_string() const override { return "Assignment " + expression->to_string() + " to: " + lvalue->to_string(); }
+	};
+
+	struct CompoundAssignment : public Statement {
+		enum Action {
+			ADD,
+			SUBTRACT,
+			MULTIPLY,
+			DIVIDE
+		};
+		std::shared_ptr<LValueStartNode> lvalue;
+		std::shared_ptr<Expression> expression;
+		Action action;
+
+		CompoundAssignment(const std::shared_ptr<LValueStartNode>& lvalue, const std::shared_ptr<Expression>& expr, Action action)
+			: lvalue{ lvalue }, expression{ expr }, action{action} {}
+		NodeType get_type() const override { return NodeType::COMPOUND_ASSIGNMENT; }
+		std::string to_string() const override { return "Compound assignment " + expression->to_string() + " to: " + lvalue->to_string(); }
 	};
 
 	struct IfStatement : public Statement {
@@ -267,10 +285,10 @@ namespace Tusk {
 
 	struct ClassDeclaration : public Statement {
 		std::string class_name{ "" };
-		std::shared_ptr<CompountStatement> body;
+		std::shared_ptr<CompoundStatement> body;
 		std::string parent_class{ "" };
 
-		ClassDeclaration(const std::string& name, const std::shared_ptr<CompountStatement>& body, const std::string& parent_class = "")
+		ClassDeclaration(const std::string& name, const std::shared_ptr<CompoundStatement>& body, const std::string& parent_class = "")
 			: class_name{ name }, body{ body }, parent_class{ parent_class } {}
 		NodeType get_type() const override { return NodeType::CLASS_DECLARATION; }
 		std::string to_string() const override {
@@ -362,7 +380,7 @@ namespace Tusk {
 
 		// STATEMENTS
 		std::shared_ptr<Statement> statement();
-		std::shared_ptr<Statement> compount_statement();
+		std::shared_ptr<Statement> compound_statement();
 		std::shared_ptr<Statement> log_statement(bool line = false);
 		std::shared_ptr<Statement> expression_statement();
 		std::shared_ptr<Statement> variable_declaration(bool allow_set_value = true);

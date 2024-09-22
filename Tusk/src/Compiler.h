@@ -78,9 +78,10 @@ namespace Tusk {
 		void expression_statement(const std::shared_ptr<ExpressionStatement>& expression_statement);
 		void variable_declaration(const std::shared_ptr<VariableDeclaration>& variable_decl, bool make_member = false);
 		void assignment(const std::shared_ptr<Assignment>& assignment);
+		void compound_assignment(const std::shared_ptr<CompoundAssignment>& assignment);
 		void if_statement(const std::shared_ptr<IfStatement>& statement);
 		void while_statement(const std::shared_ptr<WhileStatement>& statement);
-		void compount_statement(const std::shared_ptr<CompountStatement>& statement);
+		void compound_statement(const std::shared_ptr<CompoundStatement>& statement);
 		void break_statement(const std::shared_ptr<BreakStatement>& break_stmt);
 		void continue_statement(const std::shared_ptr<ContinueStatement>& continue_stmt);
 		void function_declaration(const std::shared_ptr<FunctionDeclaration>& function_decl, bool make_member = false);
