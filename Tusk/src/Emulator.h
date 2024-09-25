@@ -9,10 +9,6 @@
 #include <unordered_map>
 
 namespace Tusk {
-	namespace Standard {
-		static Value read(int arg_count, Value* arguments);
-	}
-
 	enum class OperationType {
 		ARITHMETIC,
 		RELATIONAL,
@@ -85,5 +81,7 @@ namespace Tusk {
 		Result call_method(const std::string& name, uint8_t arg_count);
 
 		void make_standard_fn(const std::string& name, StandardFnType func);
+
+		Result list_function(const std::shared_ptr<ListValue>& list, const std::string& name, uint8_t arg_count);
 	};
 }

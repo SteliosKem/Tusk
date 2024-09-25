@@ -17,7 +17,8 @@ namespace Tusk {
 		ENUM,
 		VOID,
 		ENUM_VALUE,
-		STANDARD_FN
+		STANDARD_FN,
+		LIST
 	};
 
 	struct ValueObject {
@@ -79,13 +80,14 @@ namespace Tusk {
 		ObjectType get_type() const override { return ObjectType::ENUM_VALUE; }
 	};
 
-	using StandardFnType = std::function<Value(int, Value*)>;
-	struct StandardFn : public ValueObject {
-		StandardFnType function;
+	struct ListValue : public ValueObject {
+		std::vector<Value> values;
 
-		StandardFn(const StandardFnType& func) : function{ func } { }
-		ObjectType get_type() const override { return ObjectType::STANDARD_FN; }
+		ListValue(const std::vector<Value>& values) : values{ values } { }
+		ObjectType get_type() const override { return ObjectType::LIST; }
 	};
+
+	
 
 	class Value {
 	public:
@@ -163,7 +165,13 @@ namespace Tusk {
 				case ObjectType::ENUM_VALUE:
 					os << value.get_object<EnumValue>()->enum_obj->name + "." + value.get_object<EnumValue>()->enum_name;
 					break;
-				}
+				case ObjectType::LIST:
+					os << '[';
+					for (auto& i : value.get_object<ListValue>()->values)
+						os << i << ", ";
+					os << ']';
+					break;
+			}
 			}
 			return os;
 		}
@@ -172,5 +180,26 @@ namespace Tusk {
 		const std::variant<int64_t, double, bool, std::shared_ptr<ValueObject>>& get_variant() const { return m_value; }
 	private:
 		std::variant<int64_t, double, bool, std::shared_ptr<ValueObject>> m_value;
+	};
+
+	namespace Standard {
+		enum class FunctionResult {
+			OK,
+			ERROR
+		};
+
+		struct FunctionReturn {
+			FunctionResult res;
+			Value val;
+			std::string error_msg = "";
+		};
+	}
+
+	using StandardFnType = std::function<Standard::FunctionReturn(int, Value*)>;
+	struct StandardFn : public ValueObject {
+		StandardFnType function;
+
+		StandardFn(const StandardFnType& func) : function{ func } { }
+		ObjectType get_type() const override { return ObjectType::STANDARD_FN; }
 	};
 }

@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "Emulator.h"
 #include "Bytecode.h"
+#include "Standard.h"
 
 namespace Tusk {
 	inline bool is_true(const Value& val) {
@@ -26,16 +27,10 @@ namespace Tusk {
 	}
 
 
-	namespace Standard {
-		static Value read(int arg_count, Value* arguments) {
-			std::string str;
-			std::getline(std::cin, str);
-			return Value(std::make_shared<StringObject>(str));
-		}
-	}
 
 	void Emulator::init() {
 		make_standard_fn("read", Standard::read);
+		make_standard_fn("List", Standard::List);
 	}
 
 	void Emulator::push_stack(const Value& val) {			// Push value to the stack
@@ -319,6 +314,12 @@ namespace Tusk {
 				uint8_t arg_count = next_byte();
 				const std::string& name = read_value().get_object<StringObject>()->string;
 				Value val = stack_top(arg_count);
+				if (val.is<std::shared_ptr<ValueObject>>() && val.get_object_type() == ObjectType::LIST) {
+					std::shared_ptr<ListValue> list = val.get_object<ListValue>();
+					if (list_function(list, name, arg_count) != Result::OK)
+						return Result::RUNTIME_ERROR;
+					break;
+				}
 				if (!(val.is<std::shared_ptr<ValueObject>>() && val.get_object_type() == ObjectType::INSTANCE)) {
 					m_error_handler.report_error("Cannot access members of a non-instance", {}, ErrorType::RUNTIME_ERROR);
 					return Result::RUNTIME_ERROR;
@@ -383,7 +384,12 @@ namespace Tusk {
 			}
 			case ObjectType::STANDARD_FN: {
 				StandardFnType std_func = value_to_call.get_object<StandardFn>()->function;
-				Value res = std_func(arg_count, &stack_top() - arg_count);
+				Standard::FunctionReturn ret = std_func(arg_count, &stack_top() - arg_count);
+				if (ret.res != Standard::FunctionResult::OK) {
+					m_error_handler.report_error(ret.error_msg, {}, ErrorType::RUNTIME_ERROR);
+					return Result::RUNTIME_ERROR;
+				}
+				Value res = ret.val;
 				for (int i = 0; i <= arg_count; i++)
 					m_stack.pop_back();
 				push_stack(res);
@@ -419,5 +425,26 @@ namespace Tusk {
 	void Emulator::make_standard_fn(const std::string& name, StandardFnType func) {
 		//push_stack(Value(std::make_shared<StandardFn>(func)));
 		m_global_table[name] = Value(std::make_shared<StandardFn>(func));
+	}
+
+	Result Emulator::list_function(const std::shared_ptr<ListValue>& list, const std::string& func, uint8_t arg_count) {
+		Standard::FunctionReturn ret;
+		if (func == "append")
+			ret = Standard::ListUtils::append(list, arg_count, &stack_top(arg_count ? arg_count - 1 : 0));
+		else if (func == "add")
+			ret = Standard::ListUtils::add(list, arg_count, &stack_top(arg_count ? arg_count - 1 : 0));
+		else if (func == "size")
+			ret = Standard::ListUtils::size(list, arg_count, &stack_top(arg_count ? arg_count - 1 : 0));
+		else if (func == "pop")
+			ret = Standard::ListUtils::pop(list, arg_count, &stack_top(arg_count ? arg_count - 1 : 0));
+		else if (func == "get")
+			ret = Standard::ListUtils::get(list, arg_count, &stack_top(arg_count ? arg_count - 1 : 0));
+		else {
+			m_error_handler.report_error("List object does not have method " + func, {}, ErrorType::RUNTIME_ERROR);
+			return Result::RUNTIME_ERROR;
+		}
+		pop_stack();
+		push_stack(ret.val);
+		return Result::OK;
 	}
 }
